@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "975693037757",
+    "project_id": "read-habit",
+    "storage_bucket": "read-habit.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:975693037757:android:356e2b2325616d40e377d4",
+        "android_client_info": {
+          "package_name": "com.example.readhabit"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDjzeg1dJOaE9mVFcVfqfL0XMZcaNZIeig"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
