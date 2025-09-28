@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/auth_provider.dart';
 import '../../widgets/custom_bottom_nav_bar.dart';
+import '../models/user_models.dart';
+import '../screens/profile_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -109,6 +111,7 @@ class CalendarTab extends StatelessWidget {
 }
 
 // Pantalla de Perfil
+// Pantalla de Perfil - VERSIÓN MEJORADA
 class ProfileTab extends StatelessWidget {
   const ProfileTab({super.key});
 
@@ -116,142 +119,67 @@ class ProfileTab extends StatelessWidget {
   Widget build(BuildContext context) {
     final authProvider = Provider.of<AuthProvider>(context);
 
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Perfil'),
-        backgroundColor: const Color(0xFF1E88E5),
-        foregroundColor: Colors.white,
-        elevation: 0,
-        actions: [
-          IconButton(
-            onPressed: () async {
-              await authProvider.signOut();
-            },
-            icon: const Icon(Icons.logout),
-          ),
-        ],
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            // Información del usuario
-            Container(
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: Colors.grey.shade200),
-              ),
-              child: Column(
-                children: [
-                  CircleAvatar(
-                    radius: 40,
-                    backgroundColor: const Color(0xFF1E88E5),
-                    child: Text(
-                      authProvider.user?.displayName?.isNotEmpty == true
-                          ? authProvider.user!.displayName![0].toUpperCase()
-                          : 'U',
-                      style: const TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  Text(
-                    authProvider.user?.displayName ?? 'Usuario',
-                    style: const TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    authProvider.user?.email ?? '',
-                    style: const TextStyle(fontSize: 16, color: Colors.grey),
-                  ),
-                ],
-              ),
-            ),
+    // Crear usuario desde Firebase Auth
+    final user = AppUser(
+      uid: authProvider.user?.uid ?? '',
+      name: authProvider.user?.displayName ?? 'Usuario',
+      email: authProvider.user?.email ?? '',
+      bio: 'Apasionado por la lectura', // Puedes hacer esto editable
+      currentStreak: 7, // Estos datos deberían venir de tu base de datos
+      longestStreak: 15,
+      totalBooksCompleted: 3,
+      totalChaptersRead: 45,
+      joinDate: authProvider.user?.metadata.creationTime ?? DateTime.now(),
+    );
 
-            const SizedBox(height: 24),
+    final settings = UserSettings();
 
-            // Estadísticas
-            const Text(
-              'Mis Estadísticas',
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-            ),
-
-            const SizedBox(height: 16),
-
-            _buildProfileStat('Días de racha', '0'),
-            _buildProfileStat('Libros completados', '0'),
-            _buildProfileStat('Minutos leídos', '0'),
-            _buildProfileStat('Racha más larga', '0'),
-
-            const SizedBox(height: 32),
-
-            // Configuración
-            const Text(
-              'Configuración',
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-            ),
-
-            const SizedBox(height: 16),
-
-            ListTile(
-              leading: const Icon(Icons.notifications),
-              title: const Text('Notificaciones'),
-              trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-              onTap: () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Funcionalidad próximamente')),
-                );
-              },
-            ),
-
-            ListTile(
-              leading: const Icon(Icons.settings),
-              title: const Text('Configuración'),
-              trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-              onTap: () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Funcionalidad próximamente')),
-                );
-              },
-            ),
-          ],
-        ),
-      ),
+    return ProfileScreen(
+      user: user,
+      settings: settings,
+      onUpdateUser: (updatedUser) {
+        // Aquí implementas la actualización en Firebase Firestore
+        _updateUserInFirebase(context, updatedUser);
+      },
+      onUpdateSettings: (updatedSettings) {
+        // Aquí guardas en SharedPreferences o Firebase
+        _saveUserSettings(context, updatedSettings);
+      },
+      onLogout: () async {
+        await authProvider.signOut();
+      },
+      onNavigate: (screen) {
+        // Para navegar a otras pantallas si es necesario
+        Navigator.pushNamed(context, '/$screen');
+      },
     );
   }
 
-  Widget _buildProfileStat(String label, String value) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: Colors.grey.shade200),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(label, style: const TextStyle(fontSize: 16)),
-          Text(
-            value,
-            style: const TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-              color: Color(0xFF1E88E5),
-            ),
-          ),
-        ],
+  // Método para actualizar usuario en Firebase
+  void _updateUserInFirebase(BuildContext context, AppUser updatedUser) {
+    // TODO: Implementar actualización en Firestore
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Perfil actualizado: ${updatedUser.name}'),
+        backgroundColor: Colors.green,
       ),
     );
+    print('Usuario actualizado: $updatedUser');
+
+    
+  }
+
+  // Método para guardar configuración
+  void _saveUserSettings(BuildContext context, UserSettings settings) {
+    // TODO: Implementar guardado en SharedPreferences o Firestore
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Configuración guardada'),
+        backgroundColor: Colors.green,
+      ),
+    );
+    print('Configuración guardada: $settings');
+
+    
   }
 }
