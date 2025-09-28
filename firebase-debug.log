@@ -43,3 +43,24 @@ You're about to initialize a Firebase project in this directory:
 
   C:\Users\USER\OneDrive\Escritorio\ReadHabit---mobil
 
+[debug] [2025-09-28T14:33:26.979Z] ----------------------------------------------------------------------
+[debug] [2025-09-28T14:33:26.982Z] Command:       C:\Program Files\nodejs\node.exe C:\Users\Kevin\AppData\Roaming\npm\node_modules\firebase-tools\lib\bin\firebase.js init
+[debug] [2025-09-28T14:33:26.983Z] CLI Version:   14.16.0
+[debug] [2025-09-28T14:33:26.983Z] Platform:      win32
+[debug] [2025-09-28T14:33:26.983Z] Node Version:  v22.19.0
+[debug] [2025-09-28T14:33:26.983Z] Time:          Sun Sep 28 2025 09:33:26 GMT-0500 (hora estándar de Colombia)
+[debug] [2025-09-28T14:33:26.983Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2025-09-28T14:33:26.991Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2025-09-28T14:33:26.992Z] > authorizing via signed-in user (kevindavidcerpa@gmail.com)
+[info] 
+     ######## #### ########  ######## ########     ###     ######  ########
+     ##        ##  ##     ## ##       ##     ##  ##   ##  ##       ##
+     ######    ##  ########  ######   ########  #########  ######  ######
+     ##        ##  ##    ##  ##       ##     ## ##     ##       ## ##
+     ##       #### ##     ## ######## ########  ##     ##  ######  ########
+
+You're about to initialize a Firebase project in this directory:
+
+  C:\Users\Kevin\Desktop\ReadHabit---mobil
+

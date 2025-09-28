@@ -1,7 +1,7 @@
 // screens/profile_screen.dart
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import '../models/user_models.dart';
+import '../../models/user_models.dart';
 
 enum ProfileView { main, editProfile, settings }
 
@@ -77,7 +77,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
       case ProfileView.settings:
         return _buildSettingsView();
       case ProfileView.main:
-      default:
         return _buildMainView();
     }
   }
@@ -701,7 +700,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             // Reminder Time
             _buildSettingsSection(Icons.access_time, 'Hora de recordatorio', [
               DropdownButtonFormField<String>(
-                value: _editedSettings.reminderTime,
+                initialValue: _editedSettings.reminderTime,
                 onChanged: (value) => setState(() {
                   _editedSettings = _editedSettings.copyWith(
                     reminderTime: value!,
@@ -739,7 +738,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
               const SizedBox(height: 8),
               DropdownButtonFormField<int>(
-                value: _editedSettings.weeklyGoal,
+                initialValue: _editedSettings.weeklyGoal,
                 onChanged: (value) => setState(() {
                   _editedSettings = _editedSettings.copyWith(
                     weeklyGoal: value!,
@@ -770,7 +769,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             // Language
             _buildSettingsSection(Icons.language, 'Idioma', [
               DropdownButtonFormField<String>(
-                value: _editedSettings.language,
+                initialValue: _editedSettings.language,
                 onChanged: (value) => setState(() {
                   _editedSettings = _editedSettings.copyWith(language: value!);
                 }),

@@ -1,16 +1,23 @@
+// main.dart actualizado
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:readhabit/screens/home_screen.dart';
 import 'firebase_options.dart';
 import 'providers/auth_provider.dart';
+import 'providers/book_provider.dart';
+import 'providers/user_library_provider.dart';
 import 'utils/app_routes.dart';
 import 'utils/shared_prefs_helper.dart';
 import 'screens/auth/welcome_screen.dart';
+import 'package:intl/date_symbol_data_local.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  await initializeDateFormatting('es_ES');
   runApp(const MyApp());
 }
 
@@ -20,7 +27,11 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MultiProvider(
-      providers: [ChangeNotifierProvider(create: (_) => AuthProvider())],
+      providers: [
+        ChangeNotifierProvider(create: (_) => AuthProvider()),
+        ChangeNotifierProvider(create: (_) => BookProvider()),
+        ChangeNotifierProvider(create: (_) => UserLibraryProvider()),
+      ],
       child: MaterialApp(
         title: 'ReadHabit',
         debugShowCheckedModeBanner: false,
@@ -77,7 +88,6 @@ class MyApp extends StatelessWidget {
   }
 }
 
-// Widget que decide qué pantalla mostrar basado en el estado de autenticación
 class AuthWrapper extends StatefulWidget {
   const AuthWrapper({super.key});
 
@@ -87,18 +97,61 @@ class AuthWrapper extends StatefulWidget {
 
 class _AuthWrapperState extends State<AuthWrapper> {
   bool? _isLoggedIn;
+  StreamSubscription<bool>? _authSubscription;
 
   @override
   void initState() {
     super.initState();
     _checkLoginStatus();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _listenToAuthChanges();
+    });
+  }
+
+  void _listenToAuthChanges() {
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    _authSubscription = authProvider.authStateChanges.listen((
+      bool isAuthenticated,
+    ) {
+      if (mounted) {
+        setState(() {
+          _isLoggedIn = isAuthenticated;
+        });
+
+        if (!isAuthenticated) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (mounted && Navigator.canPop(context)) {
+              Navigator.of(
+                context,
+              ).pushNamedAndRemoveUntil('/welcome', (route) => false);
+            }
+          });
+        }
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _authSubscription?.cancel();
+    super.dispose();
   }
 
   Future<void> _checkLoginStatus() async {
-    bool loggedIn = await SharedPrefsHelper.isLoggedIn();
-    setState(() {
-      _isLoggedIn = loggedIn;
-    });
+    try {
+      bool loggedIn = await SharedPrefsHelper.isLoggedIn();
+      if (mounted) {
+        setState(() {
+          _isLoggedIn = loggedIn;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isLoggedIn = false;
+        });
+      }
+    }
   }
 
   @override
@@ -117,6 +170,8 @@ class _AuthWrapperState extends State<AuthWrapper> {
   }
 
   void _handleNavigation(String screen) {
-    Navigator.pushReplacementNamed(context, '/$screen');
+    if (mounted) {
+      Navigator.pushReplacementNamed(context, '/$screen');
+    }
   }
 }

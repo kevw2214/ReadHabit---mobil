@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../services/firebase_auth_service.dart';
@@ -9,12 +11,15 @@ class AuthProvider with ChangeNotifier {
   User? _user;
   bool _isLoading = false;
   String? _errorMessage;
+  final StreamController<bool> _authStateController =
+      StreamController<bool>.broadcast();
 
   // Getters
   User? get user => _user;
   bool get isLoading => _isLoading;
   String? get errorMessage => _errorMessage;
   bool get isAuthenticated => _user != null;
+  Stream<bool> get authStateChanges => _authStateController.stream;
 
   // Constructor
   AuthProvider() {
@@ -26,21 +31,31 @@ class AuthProvider with ChangeNotifier {
     _isLoading = true;
     notifyListeners();
 
-    // Verificar si el usuario ya estaba logueado
-    bool wasLoggedIn = await SharedPrefsHelper.isLoggedIn();
+    try {
+      // Verificar si el usuario ya estaba logueado
+      bool wasLoggedIn = await SharedPrefsHelper.isLoggedIn();
 
-    if (wasLoggedIn) {
-      // Escuchar cambios en el estado de autenticación
-      _authService.authStateChanges.listen((User? user) {
-        _user = user;
-        if (user != null) {
-          _saveUserToPrefs(user);
-        }
+      if (wasLoggedIn) {
+        // Escuchar cambios en el estado de autenticación
+        _authService.authStateChanges.listen((User? user) {
+          _user = user;
+          if (user != null) {
+            _saveUserToPrefs(user);
+            _notifyAuthStateChange(true);
+          } else {
+            _clearUserState();
+            _notifyAuthStateChange(false);
+          }
+          _isLoading = false;
+          notifyListeners();
+        });
+      } else {
         _isLoading = false;
         notifyListeners();
-      });
-    } else {
+      }
+    } catch (e) {
       _isLoading = false;
+      _errorMessage = 'Error al verificar autenticación: $e';
       notifyListeners();
     }
   }
@@ -61,6 +76,7 @@ class AuthProvider with ChangeNotifier {
         _user = user;
         await _saveUserToPrefs(user);
         await SharedPrefsHelper.setLoggedIn(true);
+        _notifyAuthStateChange(true);
         _isLoading = false;
         notifyListeners();
         return true;
@@ -95,6 +111,7 @@ class AuthProvider with ChangeNotifier {
         _user = user;
         await _saveUserToPrefs(user);
         await SharedPrefsHelper.setLoggedIn(true);
+        _notifyAuthStateChange(true);
         _isLoading = false;
         notifyListeners();
         return true;
@@ -112,22 +129,44 @@ class AuthProvider with ChangeNotifier {
     }
   }
 
-  // Cerrar sesión
-  Future<void> signOut() async {
+  Future<bool> signOut() async {
     _isLoading = true;
     notifyListeners();
 
     try {
+      // Primero cerrar sesión en Firebase
       await _authService.signOut();
+
+      // Limpiar SharedPreferences
       await SharedPrefsHelper.logout();
-      _user = null;
-      _errorMessage = null;
+
+      // Limpiar estado local
+      _clearUserState();
+
+      // Notificar cambio de estado
+      _notifyAuthStateChange(false);
+
       _isLoading = false;
       notifyListeners();
+
+      return true;
     } catch (e) {
-      _errorMessage = 'Error al cerrar sesión';
+      _errorMessage = 'Error al cerrar sesión: $e';
       _isLoading = false;
       notifyListeners();
+      return false;
+    }
+  }
+
+  void _clearUserState() {
+    _user = null;
+    _errorMessage = null;
+  }
+
+  // Notificar cambios en el estado de autenticación
+  void _notifyAuthStateChange(bool isAuthenticated) {
+    if (!_authStateController.isClosed) {
+      _authStateController.add(isAuthenticated);
     }
   }
 
@@ -144,5 +183,11 @@ class AuthProvider with ChangeNotifier {
       email: user.email ?? '',
       name: user.displayName ?? '',
     );
+  }
+
+  @override
+  void dispose() {
+    _authStateController.close();
+    super.dispose();
   }
 }

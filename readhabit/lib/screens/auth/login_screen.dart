@@ -34,14 +34,6 @@ class _LoginScreenState extends State<LoginScreen> {
               // Header
               Row(
                 children: [
-                  IconButton(
-                    onPressed: () => Navigator.pop(context),
-                    icon: const Icon(Icons.arrow_back, size: 20),
-                    style: IconButton.styleFrom(
-                      backgroundColor: Colors.transparent,
-                      foregroundColor: Colors.black,
-                    ),
-                  ),
                   const SizedBox(width: 12),
                   const Text(
                     'Iniciar sesión',

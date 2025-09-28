@@ -14,7 +14,11 @@ class AppRoutes {
     switch (settings.name) {
       case welcome:
         return MaterialPageRoute(
-          builder: (_) => const WelcomeScreen(onNavigate: _dummyNavigate),
+          builder: (context) => WelcomeScreen(
+            onNavigate: (String screen) {
+              Navigator.pushReplacementNamed(context, '/$screen');
+            },
+          ),
         );
       case login:
         return MaterialPageRoute(builder: (_) => const LoginScreen());
@@ -29,9 +33,5 @@ class AppRoutes {
           ),
         );
     }
-  }
-
-  static void _dummyNavigate(String screen) {
-    // This is a dummy function for the welcome screen
   }
 }
