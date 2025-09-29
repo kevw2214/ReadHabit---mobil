@@ -2,6 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:readhabit/screens/books/reading_plan_screens.dart';
+import 'package:readhabit/screens/books/reading_screen.dart';
 import '../../providers/user_library_provider.dart';
 import '../../providers/auth_provider.dart';
 import '../../models/user_book.dart';
@@ -307,20 +308,12 @@ class _MyBooksScreenState extends State<MyBooksScreen>
   }
 
   void _continueReading(UserBook userBook) {
-    final authProvider = Provider.of<AuthProvider>(context, listen: false);
-    final libraryProvider = Provider.of<UserLibraryProvider>(
+    Navigator.push(
       context,
-      listen: false,
+      MaterialPageRoute(
+        builder: (context) => ReadingScreen(userBook: userBook),
+      ),
     );
-
-    if (authProvider.user != null) {
-      libraryProvider.continueReading(
-        userBookId: userBook.id,
-        currentChapter: userBook.currentChapter,
-        totalChapters: userBook.totalChapters,
-        userId: authProvider.user!.uid,
-      );
-    }
   }
 
   void _configurePlan(UserBook userBook) {

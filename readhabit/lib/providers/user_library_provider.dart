@@ -27,7 +27,7 @@ class UserLibraryProvider with ChangeNotifier {
   Future<void> loadUserLibrary(String userId) async {
     _isLoading = true;
     _errorMessage = null;
-    notifyListeners();
+    _deferNotifyListeners();
 
     try {
       await Future.wait([
@@ -39,7 +39,7 @@ class UserLibraryProvider with ChangeNotifier {
       _errorMessage = e.toString();
     } finally {
       _isLoading = false;
-      notifyListeners();
+      _deferNotifyListeners();
     }
   }
 
@@ -69,13 +69,20 @@ class UserLibraryProvider with ChangeNotifier {
                 .where((b) => b.status == BookStatus.completed)
                 .toList();
             _statistics = ReadingStatistics.fromUserBooks(books);
-            notifyListeners();
+            _deferNotifyListeners();
           },
           onError: (error) {
             _errorMessage = error.toString();
-            notifyListeners();
+            _deferNotifyListeners();
           },
         );
+  }
+
+  // Notificar cambios de forma diferida para evitar conflictos con el build
+  void _deferNotifyListeners() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      notifyListeners();
+    });
   }
 
   void stopListeningToUserBooks() {
@@ -94,7 +101,7 @@ class UserLibraryProvider with ChangeNotifier {
       final hasBook = await _userBookService.userHasBook(userId, book.id);
       if (hasBook) {
         _errorMessage = 'Ya tienes este libro en tu biblioteca';
-        notifyListeners();
+        _deferNotifyListeners();
         return false;
       }
 
@@ -109,7 +116,7 @@ class UserLibraryProvider with ChangeNotifier {
       return true;
     } catch (e) {
       _errorMessage = e.toString();
-      notifyListeners();
+      _deferNotifyListeners();
       return false;
     }
   }
@@ -131,7 +138,7 @@ class UserLibraryProvider with ChangeNotifier {
       return true;
     } catch (e) {
       _errorMessage = e.toString();
-      notifyListeners();
+      _deferNotifyListeners();
       return false;
     }
   }
@@ -169,7 +176,7 @@ class UserLibraryProvider with ChangeNotifier {
       return true;
     } catch (e) {
       _errorMessage = e.toString();
-      notifyListeners();
+      _deferNotifyListeners();
       return false;
     }
   }
@@ -185,7 +192,7 @@ class UserLibraryProvider with ChangeNotifier {
       return true;
     } catch (e) {
       _errorMessage = e.toString();
-      notifyListeners();
+      _deferNotifyListeners();
       return false;
     }
   }
@@ -201,7 +208,7 @@ class UserLibraryProvider with ChangeNotifier {
       return true;
     } catch (e) {
       _errorMessage = e.toString();
-      notifyListeners();
+      _deferNotifyListeners();
       return false;
     }
   }
@@ -218,7 +225,7 @@ class UserLibraryProvider with ChangeNotifier {
       return true;
     } catch (e) {
       _errorMessage = e.toString();
-      notifyListeners();
+      _deferNotifyListeners();
       return false;
     }
   }
@@ -229,7 +236,7 @@ class UserLibraryProvider with ChangeNotifier {
       return await _userBookService.userHasBook(userId, bookId);
     } catch (e) {
       _errorMessage = e.toString();
-      notifyListeners();
+      _deferNotifyListeners();
       return false;
     }
   }
@@ -237,7 +244,7 @@ class UserLibraryProvider with ChangeNotifier {
   // Limpiar errores
   void clearError() {
     _errorMessage = null;
-    notifyListeners();
+    _deferNotifyListeners();
   }
 
   @override

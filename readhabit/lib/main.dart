@@ -9,6 +9,7 @@ import 'firebase_options.dart';
 import 'providers/auth_provider.dart';
 import 'providers/book_provider.dart';
 import 'providers/user_library_provider.dart';
+import 'providers/reading_provider.dart';
 import 'utils/app_routes.dart';
 import 'utils/shared_prefs_helper.dart';
 import 'screens/auth/welcome_screen.dart';
@@ -31,6 +32,8 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => AuthProvider()),
         ChangeNotifierProvider(create: (_) => BookProvider()),
         ChangeNotifierProvider(create: (_) => UserLibraryProvider()),
+        // Agregar ReadingProvider para el sistema de racha
+        ChangeNotifierProvider(create: (_) => ReadingProvider('')),
       ],
       child: MaterialApp(
         title: 'ReadHabit',

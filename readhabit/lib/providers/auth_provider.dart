@@ -1,3 +1,4 @@
+// lib/providers/auth_provider.dart
 import 'dart:async';
 
 import 'package:flutter/foundation.dart';
@@ -153,6 +154,43 @@ class AuthProvider with ChangeNotifier {
     } catch (e) {
       _errorMessage = 'Error al cerrar sesión: $e';
       _isLoading = false;
+      notifyListeners();
+      return false;
+    }
+  }
+
+  // Actualizar perfil del usuario
+  Future<bool> updateUserProfile(String name, String email) async {
+    if (_user == null) {
+      _errorMessage = 'Usuario no autenticado';
+      notifyListeners();
+      return false;
+    }
+
+    try {
+      // Actualizar en Firebase Auth
+      await _user!.updateDisplayName(name);
+      if (email != _user!.email) {
+        await _user!.updateEmail(email);
+      }
+
+      // Recargar datos del usuario
+      await _user!.reload();
+      // ✅ CORRECTO: Usando la propiedad correcta
+      final updatedUser = _authService.currentUser;
+
+      if (updatedUser != null) {
+        _user = updatedUser;
+        await _saveUserToPrefs(_user!);
+        notifyListeners();
+        return true;
+      } else {
+        _errorMessage = 'Error al recargar datos del usuario';
+        notifyListeners();
+        return false;
+      }
+    } catch (e) {
+      _errorMessage = 'Error al actualizar perfil: $e';
       notifyListeners();
       return false;
     }

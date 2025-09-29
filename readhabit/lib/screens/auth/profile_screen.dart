@@ -795,19 +795,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ]),
             const SizedBox(height: 16),
 
-            // Theme
-            _buildSettingsSection(Icons.dark_mode, 'Tema', [
-              _buildSwitchSetting(
-                'Modo oscuro',
-                'Cambiar tema de la aplicación',
-                _editedSettings.darkMode,
-                (value) => setState(() {
-                  _editedSettings = _editedSettings.copyWith(darkMode: value);
-                }),
-              ),
-            ]),
-            const SizedBox(height: 24),
-
             // Save Button
             ElevatedButton(
               onPressed: _handleSaveSettings,
