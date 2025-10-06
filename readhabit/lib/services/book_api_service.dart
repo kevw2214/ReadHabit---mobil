@@ -1,25 +1,24 @@
-// lib/services/book_api_service.dart
+// lib/services/google_books_service.dart
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import '../models/book.dart';
 import '../models/book_category.dart';
 
-class BookApiService {
-  static const String _baseUrl = 'https://openlibrary.org';
+class GoogleBooksService {
+  static const String _baseUrl = 'https://www.googleapis.com/books/v1';
 
-  // Buscar libros por término
   Future<List<Book>> searchBooks(String query, {int limit = 20}) async {
     try {
       final url = Uri.parse(
-        '$_baseUrl/search.json?q=${Uri.encodeQueryComponent(query)}&limit=$limit',
+        '$_baseUrl/volumes?q=${Uri.encodeQueryComponent(query)}&maxResults=$limit&printType=books',
       );
       final response = await http.get(url);
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
-        final List<dynamic> docs = data['docs'] ?? [];
+        final List<dynamic> items = data['items'] ?? [];
 
-        return docs.map((doc) => Book.fromOpenLibrary(doc)).toList();
+        return items.map((item) => Book.fromGoogleBooks(item)).toList();
       } else {
         throw Exception('Error al buscar libros: ${response.statusCode}');
       }
@@ -28,7 +27,6 @@ class BookApiService {
     }
   }
 
-  // Obtener libros por categoría
   Future<List<Book>> getBooksByCategory(
     BookCategory category, {
     int limit = 20,
@@ -36,15 +34,15 @@ class BookApiService {
     try {
       String subject = _getCategorySubject(category);
       final url = Uri.parse(
-        '$_baseUrl/search.json?subject=$subject&limit=$limit&sort=rating',
+        '$_baseUrl/volumes?q=subject:$subject&maxResults=$limit&printType=books&orderBy=relevance',
       );
       final response = await http.get(url);
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
-        final List<dynamic> docs = data['docs'] ?? [];
+        final List<dynamic> items = data['items'] ?? [];
 
-        return docs.map((doc) => Book.fromOpenLibrary(doc)).toList();
+        return items.map((item) => Book.fromGoogleBooks(item)).toList();
       } else {
         throw Exception(
           'Error al obtener libros por categoría: ${response.statusCode}',
@@ -55,17 +53,18 @@ class BookApiService {
     }
   }
 
-  // Obtener libros populares
   Future<List<Book>> getPopularBooks({int limit = 20}) async {
     try {
-      final url = Uri.parse('$_baseUrl/search.json?sort=rating&limit=$limit');
+      final url = Uri.parse(
+        '$_baseUrl/volumes?q=subject:fiction&maxResults=$limit&printType=books&orderBy=newest',
+      );
       final response = await http.get(url);
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
-        final List<dynamic> docs = data['docs'] ?? [];
+        final List<dynamic> items = data['items'] ?? [];
 
-        return docs.map((doc) => Book.fromOpenLibrary(doc)).toList();
+        return items.map((item) => Book.fromGoogleBooks(item)).toList();
       } else {
         throw Exception(
           'Error al obtener libros populares: ${response.statusCode}',
@@ -73,6 +72,23 @@ class BookApiService {
       }
     } catch (e) {
       throw Exception('Error de conexión: $e');
+    }
+  }
+
+  // Obtener detalles específicos de un libro
+  Future<Book?> getBookDetails(String bookId) async {
+    try {
+      final url = Uri.parse('$_baseUrl/volumes/$bookId');
+      final response = await http.get(url);
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        return Book.fromGoogleBooks(data);
+      } else {
+        return null;
+      }
+    } catch (e) {
+      return null;
     }
   }
 
@@ -92,8 +108,8 @@ class BookApiService {
         return 'art';
       case BookCategory.religion:
         return 'religion';
-      default:
-        return 'popular';
+      case BookCategory.populares:
+        return 'bestsellers';
     }
   }
 }
