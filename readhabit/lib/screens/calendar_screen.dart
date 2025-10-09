@@ -1,4 +1,4 @@
-// lib/screens/calendar_screen.dart - VERSIÓN MEJORADA CON ESTADOS
+// lib/screens/calendar_screen.dart - VERSIÓN CORREGIDA
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
@@ -12,9 +12,10 @@ import '../models/book.dart';
 // Enum para los estados de lectura
 enum ReadingStatus {
   read, // Leí - verde
-  notRead, // No leí - gris/rojo
+  notRead, // No leí - rojo (solo días pasados)
   paused, // En pausa - naranja
   today, // Hoy - azul
+  future, // Futuro - gris neutral
 }
 
 class CalendarScreen extends StatefulWidget {
@@ -50,14 +51,14 @@ class _CalendarScreenState extends State<CalendarScreen> {
   }
 
   void _loadReadingStatus() {
-    // Simular diferentes estados de lectura
     final today = DateTime.now();
 
+    // Solo cargar estados para días pasados y hoy
     for (int i = 0; i < 30; i++) {
       final date = today.subtract(Duration(days: i));
       final dateKey = _formatDateKey(date);
 
-      // Asignar estados de ejemplo
+      // Asignar estados de ejemplo solo para días pasados
       if (i == 0) {
         _dailyStatus[dateKey] = ReadingStatus.today; // Hoy
       } else if (i % 3 == 0) {
@@ -65,9 +66,12 @@ class _CalendarScreenState extends State<CalendarScreen> {
       } else if (i % 5 == 0) {
         _dailyStatus[dateKey] = ReadingStatus.paused; // En pausa
       } else {
-        _dailyStatus[dateKey] = ReadingStatus.notRead; // No leí
+        _dailyStatus[dateKey] =
+            ReadingStatus.notRead; // No leí (solo días pasados)
       }
     }
+
+    // Los días futuros no se cargan en _dailyStatus, por defecto serán "future"
   }
 
   String _formatDateKey(DateTime date) {
@@ -88,6 +92,16 @@ class _CalendarScreenState extends State<CalendarScreen> {
 
   ReadingStatus _getDayStatus(DateTime date) {
     final dateKey = _formatDateKey(date);
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final currentDate = DateTime(date.year, date.month, date.day);
+
+    // Si es un día futuro, retornar estado "future"
+    if (currentDate.isAfter(today)) {
+      return ReadingStatus.future;
+    }
+
+    // Si no está en el mapa, es un día pasado sin registro = "notRead"
     return _dailyStatus[dateKey] ?? ReadingStatus.notRead;
   }
 
@@ -105,6 +119,20 @@ class _CalendarScreenState extends State<CalendarScreen> {
         date.day == _selectedDay!.day;
   }
 
+  bool _isPastDay(DateTime date) {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final currentDate = DateTime(date.year, date.month, date.day);
+    return currentDate.isBefore(today);
+  }
+
+  bool _isFutureDay(DateTime date) {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final currentDate = DateTime(date.year, date.month, date.day);
+    return currentDate.isAfter(today);
+  }
+
   Color _getStatusColor(ReadingStatus status) {
     switch (status) {
       case ReadingStatus.read:
@@ -115,6 +143,8 @@ class _CalendarScreenState extends State<CalendarScreen> {
         return Colors.orange.shade500;
       case ReadingStatus.today:
         return Colors.blue.shade500;
+      case ReadingStatus.future:
+        return Colors.grey.shade400;
     }
   }
 
@@ -123,11 +153,13 @@ class _CalendarScreenState extends State<CalendarScreen> {
       case ReadingStatus.read:
         return Colors.green.shade50;
       case ReadingStatus.notRead:
-        return Colors.grey.shade50;
+        return Colors.red.shade50;
       case ReadingStatus.paused:
         return Colors.orange.shade50;
       case ReadingStatus.today:
         return Colors.blue.shade50;
+      case ReadingStatus.future:
+        return Colors.transparent;
     }
   }
 
@@ -141,6 +173,8 @@ class _CalendarScreenState extends State<CalendarScreen> {
         return 'En pausa';
       case ReadingStatus.today:
         return 'Hoy';
+      case ReadingStatus.future:
+        return 'Próximo';
     }
   }
 
@@ -154,6 +188,8 @@ class _CalendarScreenState extends State<CalendarScreen> {
         return Icons.pause_circle;
       case ReadingStatus.today:
         return Icons.today;
+      case ReadingStatus.future:
+        return Icons.schedule;
     }
   }
 
@@ -225,27 +261,35 @@ class _CalendarScreenState extends State<CalendarScreen> {
           final pausedDays = _dailyStatus.values
               .where((status) => status == ReadingStatus.paused)
               .length;
+          final notReadDays = _dailyStatus.values
+              .where((status) => status == ReadingStatus.notRead)
+              .length;
 
           return Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Tu Progreso Mensual',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.blue.shade800,
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Tu Progreso Mensual',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.blue.shade800,
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    '$readDays días leídos • $pausedDays en pausa',
-                    style: TextStyle(fontSize: 14, color: Colors.blue.shade600),
-                  ),
-                ],
+                    const SizedBox(height: 4),
+                    Text(
+                      '$readDays leídos • $notReadDays sin leer • $pausedDays en pausa',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Colors.blue.shade600,
+                      ),
+                    ),
+                  ],
+                ),
               ),
               Container(
                 padding: const EdgeInsets.symmetric(
@@ -364,6 +408,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
         final status = _getDayStatus(day);
         final isToday = _isToday(day);
         final isSelected = _isSelected(day);
+        final isFuture = _isFutureDay(day);
 
         return GestureDetector(
           onTap: () => _onDaySelected(day),
@@ -386,17 +431,23 @@ class _CalendarScreenState extends State<CalendarScreen> {
                   style: TextStyle(
                     fontWeight: FontWeight.w500,
                     color: isCurrentMonth
-                        ? (isToday ? _getStatusColor(status) : Colors.black87)
+                        ? (isToday
+                              ? _getStatusColor(status)
+                              : (isFuture
+                                    ? Colors.grey.shade400
+                                    : Colors.black87))
                         : Colors.grey.shade400,
                     fontSize: 14,
                   ),
                 ),
                 const SizedBox(height: 2),
-                Icon(
-                  _getStatusIcon(status),
-                  color: _getStatusColor(status),
-                  size: 12,
-                ),
+                if (status !=
+                    ReadingStatus.future) // No mostrar icono en días futuros
+                  Icon(
+                    _getStatusIcon(status),
+                    color: _getStatusColor(status),
+                    size: 12,
+                  ),
               ],
             ),
           ),
@@ -410,6 +461,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
 
     final status = _getDayStatus(_selectedDay!);
     final isToday = _isToday(_selectedDay!);
+    final isFuture = _isFutureDay(_selectedDay!);
 
     return Container(
       margin: const EdgeInsets.only(top: 16),
@@ -478,7 +530,8 @@ class _CalendarScreenState extends State<CalendarScreen> {
             ),
           ),
           const SizedBox(height: 16),
-          if (isToday) _buildTodayActions(),
+          if (isToday && !isFuture) _buildTodayActions(),
+          if (isFuture) _buildFutureDayMessage(),
         ],
       ),
     );
@@ -494,6 +547,8 @@ class _CalendarScreenState extends State<CalendarScreen> {
         return 'Usaste tu pausa semanal este día';
       case ReadingStatus.today:
         return 'Hoy - ¡Continúa tu racha!';
+      case ReadingStatus.future:
+        return 'Día futuro - ¡Prepárate para leer!';
     }
   }
 
@@ -581,7 +636,38 @@ class _CalendarScreenState extends State<CalendarScreen> {
     );
   }
 
+  Widget _buildFutureDayMessage() {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.blue.shade50,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: Colors.blue.shade100),
+      ),
+      child: Row(
+        children: [
+          Icon(Icons.schedule, color: Colors.blue.shade600),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              'Este día aún no ha llegado. ¡Prepárate para mantener tu racha!',
+              style: TextStyle(
+                color: Colors.blue.shade800,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildLegend() {
+    // Solo mostrar leyenda para estados activos, no para "future"
+    final activeStatuses = ReadingStatus.values
+        .where((status) => status != ReadingStatus.future)
+        .toList();
+
     return Container(
       margin: const EdgeInsets.only(top: 16),
       padding: const EdgeInsets.all(12),
@@ -603,7 +689,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
           Wrap(
             spacing: 12,
             runSpacing: 8,
-            children: ReadingStatus.values.map((status) {
+            children: activeStatuses.map((status) {
               return Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
