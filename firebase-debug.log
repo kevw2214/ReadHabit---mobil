@@ -64,3 +64,27 @@ You're about to initialize a Firebase project in this directory:
 
   C:\Users\Kevin\Desktop\ReadHabit---mobil
 
+[debug] [2025-09-29T11:52:50.950Z] ----------------------------------------------------------------------
+[debug] [2025-09-29T11:52:50.962Z] Command:       C:\Program Files\nodejs\node.exe C:\Users\USER\AppData\Roaming\npm\node_modules\firebase-tools\lib\bin\firebase.js init
+[debug] [2025-09-29T11:52:50.962Z] CLI Version:   14.17.0
+[debug] [2025-09-29T11:52:50.963Z] Platform:      win32
+[debug] [2025-09-29T11:52:50.963Z] Node Version:  v22.19.0
+[debug] [2025-09-29T11:52:50.963Z] Time:          Mon Sep 29 2025 06:52:50 GMT-0500 (hora estándar de Colombia)
+[debug] [2025-09-29T11:52:50.963Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2025-09-29T11:52:50.966Z] >>> [apiv2][query] GET https://firebase-public.firebaseio.com/cli.json [none]
+[debug] [2025-09-29T11:52:51.039Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2025-09-29T11:52:51.039Z] > authorizing via signed-in user (3013463444danimendo@gmail.com)
+[info] 
+     ######## #### ########  ######## ########     ###     ######  ########
+     ##        ##  ##     ## ##       ##     ##  ##   ##  ##       ##
+     ######    ##  ########  ######   ########  #########  ######  ######
+     ##        ##  ##    ##  ##       ##     ## ##     ##       ## ##
+     ##       #### ##     ## ######## ########  ##     ##  ######  ########
+
+You're about to initialize a Firebase project in this directory:
+
+  C:\Users\USER\OneDrive\Escritorio\ReadHabit---mobil
+
+[debug] [2025-09-29T11:52:51.518Z] <<< [apiv2][status] GET https://firebase-public.firebaseio.com/cli.json 200
+[debug] [2025-09-29T11:52:51.519Z] <<< [apiv2][body] GET https://firebase-public.firebaseio.com/cli.json {"cloudBuildErrorAfter":1594252800000,"cloudBuildWarnAfter":1590019200000,"defaultNode10After":1594252800000,"minVersion":"3.0.5","node8DeploysDisabledAfter":1613390400000,"node8RuntimeDisabledAfter":1615809600000,"node8WarnAfter":1600128000000}

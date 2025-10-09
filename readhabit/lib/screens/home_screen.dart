@@ -10,6 +10,7 @@ import '../widgets/custom_bottom_nav_bar.dart';
 import '../models/user_models.dart';
 import '../models/user_book.dart';
 import '../screens/auth/profile_screen.dart';
+import 'calendar_screen.dart'; 
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -658,27 +659,13 @@ class _HomeTabState extends State<HomeTab> {
   }
 }
 
-// Las demás clases permanecen igual...
+// CALENDAR TAB SIMPLIFICADO
 class CalendarTab extends StatelessWidget {
   const CalendarTab({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Calendario'),
-        backgroundColor: const Color(0xFF1E88E5),
-        foregroundColor: Colors.white,
-        elevation: 0,
-      ),
-      body: const Center(
-        child: Text(
-          'Pantalla de Calendario\n(Próximamente)',
-          textAlign: TextAlign.center,
-          style: TextStyle(fontSize: 18, color: Colors.grey),
-        ),
-      ),
-    );
+    return const CalendarScreen(); // ✅ AHORA FUNCIONA
   }
 }
 

@@ -68,3 +68,44 @@ class UserSettings {
     );
   }
 }
+
+
+class ReadingDay {
+  final String date; 
+  final String status; 
+  final String? bookId;
+  final int? chapter;
+  final bool? correctlyAnswered;
+  final int? attemptCount;
+
+  ReadingDay({
+    required this.date,
+    required this.status,
+    this.bookId,
+    this.chapter,
+    this.correctlyAnswered,
+    this.attemptCount,
+  });
+
+  factory ReadingDay.fromFirestore(Map<String, dynamic> json) {
+    return ReadingDay(
+      date: json['date'] ?? '',
+      status: json['status'] ?? '',
+      bookId: json['bookId'],
+      chapter: json['chapter'],
+      correctlyAnswered: json['correctlyAnswered'],
+      attemptCount: json['attemptCount'],
+    );
+  }
+
+  Map<String, dynamic> toFirestore() {
+    return {
+      'date': date,
+      'status': status,
+      'bookId': bookId,
+      'chapter': chapter,
+      'correctlyAnswered': correctlyAnswered,
+      'attemptCount': attemptCount,
+    };
+  }
+}
