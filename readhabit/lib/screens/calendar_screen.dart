@@ -1,4 +1,4 @@
-// lib/screens/calendar_screen.dart
+// lib/screens/calendar_screen.dart - VERSIÓN MEJORADA CON ESTADOS
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
@@ -8,6 +8,14 @@ import '../providers/user_library_provider.dart';
 import '../models/user_models.dart';
 import '../models/user_book.dart';
 import '../models/book.dart';
+
+// Enum para los estados de lectura
+enum ReadingStatus {
+  read, // Leí - verde
+  notRead, // No leí - gris/rojo
+  paused, // En pausa - naranja
+  today, // Hoy - azul
+}
 
 class CalendarScreen extends StatefulWidget {
   const CalendarScreen({super.key});
@@ -20,14 +28,14 @@ class _CalendarScreenState extends State<CalendarScreen> {
   DateTime _focusedDay = DateTime.now();
   DateTime? _selectedDay;
   late PageController _monthController;
-  final Map<String, List<UserBook>> _dailyReadings = {};
+  final Map<String, ReadingStatus> _dailyStatus = {};
 
   @override
   void initState() {
     super.initState();
     _selectedDay = DateTime.now();
     _monthController = PageController(initialPage: _getInitialPage());
-    _loadReadingHistory();
+    _loadReadingStatus();
   }
 
   @override
@@ -41,21 +49,23 @@ class _CalendarScreenState extends State<CalendarScreen> {
     return (now.year - 2020) * 12 + now.month - 1;
   }
 
-  void _loadReadingHistory() {
-    // Simular datos de lectura - en una app real esto vendría de tu base de datos
-    final authProvider = context.read<AuthProvider>();
-    if (authProvider.user != null) {
-      final libraryProvider = context.read<UserLibraryProvider>();
-      final readingProvider = context.read<ReadingProvider>();
+  void _loadReadingStatus() {
+    // Simular diferentes estados de lectura
+    final today = DateTime.now();
 
-      // Simular algunos días con lectura
-      final today = DateTime.now();
-      for (int i = 0; i < 7; i++) {
-        final date = today.subtract(Duration(days: i));
-        final dateKey = _formatDateKey(date);
-        if (libraryProvider.booksInProgress.isNotEmpty && i % 2 == 0) {
-          _dailyReadings[dateKey] = [libraryProvider.booksInProgress.first];
-        }
+    for (int i = 0; i < 30; i++) {
+      final date = today.subtract(Duration(days: i));
+      final dateKey = _formatDateKey(date);
+
+      // Asignar estados de ejemplo
+      if (i == 0) {
+        _dailyStatus[dateKey] = ReadingStatus.today; // Hoy
+      } else if (i % 3 == 0) {
+        _dailyStatus[dateKey] = ReadingStatus.read; // Leí
+      } else if (i % 5 == 0) {
+        _dailyStatus[dateKey] = ReadingStatus.paused; // En pausa
+      } else {
+        _dailyStatus[dateKey] = ReadingStatus.notRead; // No leí
       }
     }
   }
@@ -76,8 +86,9 @@ class _CalendarScreenState extends State<CalendarScreen> {
     return DateFormat('E', 'es').format(date).substring(0, 1).toUpperCase();
   }
 
-  bool _hasReading(DateTime date) {
-    return _dailyReadings.containsKey(_formatDateKey(date));
+  ReadingStatus _getDayStatus(DateTime date) {
+    final dateKey = _formatDateKey(date);
+    return _dailyStatus[dateKey] ?? ReadingStatus.notRead;
   }
 
   bool _isToday(DateTime date) {
@@ -92,6 +103,58 @@ class _CalendarScreenState extends State<CalendarScreen> {
         date.year == _selectedDay!.year &&
         date.month == _selectedDay!.month &&
         date.day == _selectedDay!.day;
+  }
+
+  Color _getStatusColor(ReadingStatus status) {
+    switch (status) {
+      case ReadingStatus.read:
+        return Colors.green.shade500;
+      case ReadingStatus.notRead:
+        return Colors.red.shade400;
+      case ReadingStatus.paused:
+        return Colors.orange.shade500;
+      case ReadingStatus.today:
+        return Colors.blue.shade500;
+    }
+  }
+
+  Color _getStatusBackgroundColor(ReadingStatus status) {
+    switch (status) {
+      case ReadingStatus.read:
+        return Colors.green.shade50;
+      case ReadingStatus.notRead:
+        return Colors.grey.shade50;
+      case ReadingStatus.paused:
+        return Colors.orange.shade50;
+      case ReadingStatus.today:
+        return Colors.blue.shade50;
+    }
+  }
+
+  String _getStatusText(ReadingStatus status) {
+    switch (status) {
+      case ReadingStatus.read:
+        return 'Leí';
+      case ReadingStatus.notRead:
+        return 'No leí';
+      case ReadingStatus.paused:
+        return 'En pausa';
+      case ReadingStatus.today:
+        return 'Hoy';
+    }
+  }
+
+  IconData _getStatusIcon(ReadingStatus status) {
+    switch (status) {
+      case ReadingStatus.read:
+        return Icons.check_circle;
+      case ReadingStatus.notRead:
+        return Icons.cancel;
+      case ReadingStatus.paused:
+        return Icons.pause_circle;
+      case ReadingStatus.today:
+        return Icons.today;
+    }
   }
 
   List<DateTime> _getDaysInMonth(DateTime month) {
@@ -156,6 +219,13 @@ class _CalendarScreenState extends State<CalendarScreen> {
       ),
       child: Consumer<ReadingProvider>(
         builder: (context, readingProvider, child) {
+          final readDays = _dailyStatus.values
+              .where((status) => status == ReadingStatus.read)
+              .length;
+          final pausedDays = _dailyStatus.values
+              .where((status) => status == ReadingStatus.paused)
+              .length;
+
           return Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -163,7 +233,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Tu Progreso',
+                    'Tu Progreso Mensual',
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
@@ -172,7 +242,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    'Racha actual: ${readingProvider.currentStreak} días',
+                    '$readDays días leídos • $pausedDays en pausa',
                     style: TextStyle(fontSize: 14, color: Colors.blue.shade600),
                   ),
                 ],
@@ -224,6 +294,10 @@ class _CalendarScreenState extends State<CalendarScreen> {
           ),
           Consumer<ReadingProvider>(
             builder: (context, readingProvider, child) {
+              final readDays = _dailyStatus.values
+                  .where((status) => status == ReadingStatus.read)
+                  .length;
+
               return Column(
                 children: [
                   Text(
@@ -234,7 +308,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
                     ),
                   ),
                   Text(
-                    '${_dailyReadings.length} días de lectura',
+                    '$readDays días de lectura',
                     style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
                   ),
                 ],
@@ -287,7 +361,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
       itemBuilder: (context, index) {
         final day = days[index];
         final isCurrentMonth = day.month == month.month;
-        final hasReading = _hasReading(day);
+        final status = _getDayStatus(day);
         final isToday = _isToday(day);
         final isSelected = _isSelected(day);
 
@@ -297,14 +371,12 @@ class _CalendarScreenState extends State<CalendarScreen> {
             margin: const EdgeInsets.all(2),
             decoration: BoxDecoration(
               color: isSelected
-                  ? Colors.blue.shade100
-                  : isToday
-                  ? Colors.orange.shade50
-                  : Colors.transparent,
+                  ? _getStatusBackgroundColor(status).withOpacity(0.7)
+                  : _getStatusBackgroundColor(status),
               borderRadius: BorderRadius.circular(8),
               border: isToday
-                  ? Border.all(color: Colors.orange.shade300, width: 2)
-                  : null,
+                  ? Border.all(color: _getStatusColor(status), width: 2)
+                  : Border.all(color: Colors.transparent),
             ),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -314,21 +386,17 @@ class _CalendarScreenState extends State<CalendarScreen> {
                   style: TextStyle(
                     fontWeight: FontWeight.w500,
                     color: isCurrentMonth
-                        ? (isToday ? Colors.orange.shade800 : Colors.black87)
+                        ? (isToday ? _getStatusColor(status) : Colors.black87)
                         : Colors.grey.shade400,
                     fontSize: 14,
                   ),
                 ),
-                if (hasReading)
-                  Container(
-                    margin: const EdgeInsets.only(top: 2),
-                    width: 6,
-                    height: 6,
-                    decoration: BoxDecoration(
-                      color: Colors.green.shade500,
-                      shape: BoxShape.circle,
-                    ),
-                  ),
+                const SizedBox(height: 2),
+                Icon(
+                  _getStatusIcon(status),
+                  color: _getStatusColor(status),
+                  size: 12,
+                ),
               ],
             ),
           ),
@@ -340,8 +408,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
   Widget _buildSelectedDayDetails() {
     if (_selectedDay == null) return const SizedBox();
 
-    final dateKey = _formatDateKey(_selectedDay!);
-    final readings = _dailyReadings[dateKey] ?? [];
+    final status = _getDayStatus(_selectedDay!);
     final isToday = _isToday(_selectedDay!);
 
     return Container(
@@ -357,7 +424,11 @@ class _CalendarScreenState extends State<CalendarScreen> {
         children: [
           Row(
             children: [
-              Icon(Icons.calendar_today, color: Colors.blue.shade600, size: 16),
+              Icon(
+                _getStatusIcon(status),
+                color: _getStatusColor(status),
+                size: 20,
+              ),
               const SizedBox(width: 8),
               Text(
                 DateFormat('EEEE, d MMMM y', 'es').format(_selectedDay!),
@@ -366,154 +437,192 @@ class _CalendarScreenState extends State<CalendarScreen> {
                   fontSize: 16,
                 ),
               ),
-              if (isToday) ...[
-                const SizedBox(width: 8),
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 8,
-                    vertical: 2,
-                  ),
-                  decoration: BoxDecoration(
-                    color: Colors.orange.shade100,
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: Text(
-                    'Hoy',
-                    style: TextStyle(
-                      color: Colors.orange.shade800,
-                      fontSize: 10,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-              ],
             ],
           ),
           const SizedBox(height: 12),
-          if (readings.isEmpty)
-            Text(
-              isToday ? 'Aún no has leído hoy' : 'No hay registro de lectura',
-              style: TextStyle(
-                color: Colors.grey.shade600,
-                fontStyle: FontStyle.italic,
-              ),
-            )
-          else ...[
-            Text(
-              'Libros leídos:',
-              style: TextStyle(
-                fontWeight: FontWeight.w600,
-                color: Colors.grey.shade700,
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: _getStatusBackgroundColor(status),
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(
+                color: _getStatusColor(status).withOpacity(0.3),
               ),
             ),
-            const SizedBox(height: 8),
-            ...readings.map((userBook) => _buildBookItem(userBook)),
-          ],
-          if (isToday) ...[
-            const SizedBox(height: 16),
-            Consumer<ReadingProvider>(
-              builder: (context, readingProvider, child) {
-                if (readingProvider.hasCompletedToday) {
-                  return Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: Colors.green.shade50,
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: Colors.green.shade100),
-                    ),
-                    child: Row(
-                      children: [
-                        Icon(Icons.check_circle, color: Colors.green.shade600),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: Text(
-                            '¡Ya completaste tu lectura de hoy!',
-                            style: TextStyle(
-                              color: Colors.green.shade800,
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
+            child: Row(
+              children: [
+                Icon(_getStatusIcon(status), color: _getStatusColor(status)),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Estado: ${_getStatusText(status)}',
+                        style: TextStyle(
+                          fontWeight: FontWeight.w600,
+                          color: _getStatusColor(status),
                         ),
-                      ],
-                    ),
-                  );
-                } else {
-                  return ElevatedButton(
-                    onPressed: () {
-                      readingProvider.markDailyReading();
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.blue.shade600,
-                      foregroundColor: Colors.white,
-                      minimumSize: const Size(double.infinity, 48),
-                    ),
-                    child: const Text('Marcar lectura de hoy'),
-                  );
-                }
-              },
+                      ),
+                      Text(
+                        _getStatusDescription(status),
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Colors.grey.shade600,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
             ),
-          ],
+          ),
+          const SizedBox(height: 16),
+          if (isToday) _buildTodayActions(),
         ],
       ),
     );
   }
 
-  Widget _buildBookItem(UserBook userBook) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 8),
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: Colors.grey.shade200),
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 4,
-            height: 40,
+  String _getStatusDescription(ReadingStatus status) {
+    switch (status) {
+      case ReadingStatus.read:
+        return 'Completaste tu lectura este día';
+      case ReadingStatus.notRead:
+        return 'No registraste lectura este día';
+      case ReadingStatus.paused:
+        return 'Usaste tu pausa semanal este día';
+      case ReadingStatus.today:
+        return 'Hoy - ¡Continúa tu racha!';
+    }
+  }
+
+  Widget _buildTodayActions() {
+    return Consumer<ReadingProvider>(
+      builder: (context, readingProvider, child) {
+        if (readingProvider.hasCompletedToday) {
+          return Container(
+            padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: Colors.blue.shade400,
-              borderRadius: BorderRadius.circular(2),
+              color: Colors.green.shade50,
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: Colors.green.shade100),
             ),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+            child: Row(
               children: [
-                Text(
-                  userBook.book.title,
-                  style: const TextStyle(
-                    fontWeight: FontWeight.w500,
-                    fontSize: 14,
+                Icon(Icons.check_circle, color: Colors.green.shade600),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    '¡Ya completaste tu lectura de hoy!',
+                    style: TextStyle(
+                      color: Colors.green.shade800,
+                      fontWeight: FontWeight.w500,
+                    ),
                   ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                Text(
-                  userBook.book.author,
-                  style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
                 ),
               ],
             ),
-          ),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-            decoration: BoxDecoration(
-              color: Colors.blue.shade50,
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Text(
-              'Cap. ${userBook.currentChapter + 1}',
-              style: TextStyle(
-                fontSize: 10,
-                fontWeight: FontWeight.w600,
-                color: Colors.blue.shade700,
+          );
+        } else {
+          return Column(
+            children: [
+              ElevatedButton(
+                onPressed: () {
+                  readingProvider.markDailyReading();
+                  setState(() {
+                    _dailyStatus[_formatDateKey(DateTime.now())] =
+                        ReadingStatus.read;
+                  });
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.green.shade600,
+                  foregroundColor: Colors.white,
+                  minimumSize: const Size(double.infinity, 48),
+                ),
+                child: const Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.check_circle, size: 20),
+                    SizedBox(width: 8),
+                    Text('Marcar como "Leí"'),
+                  ],
+                ),
               ),
+              const SizedBox(height: 8),
+              OutlinedButton(
+                onPressed: readingProvider.hasWeeklyPauseAvailable
+                    ? () {
+                        readingProvider.useWeeklyPause();
+                        setState(() {
+                          _dailyStatus[_formatDateKey(DateTime.now())] =
+                              ReadingStatus.paused;
+                        });
+                      }
+                    : null,
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: Colors.orange.shade600,
+                  side: BorderSide(color: Colors.orange.shade600),
+                  minimumSize: const Size(double.infinity, 48),
+                ),
+                child: const Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.pause_circle, size: 20),
+                    SizedBox(width: 8),
+                    Text('Usar Pausa Semanal'),
+                  ],
+                ),
+              ),
+            ],
+          );
+        }
+      },
+    );
+  }
+
+  Widget _buildLegend() {
+    return Container(
+      margin: const EdgeInsets.only(top: 16),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.grey.shade50,
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Leyenda:',
+            style: TextStyle(
+              fontWeight: FontWeight.w600,
+              color: Colors.grey.shade700,
             ),
+          ),
+          const SizedBox(height: 8),
+          Wrap(
+            spacing: 12,
+            runSpacing: 8,
+            children: ReadingStatus.values.map((status) {
+              return Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    width: 12,
+                    height: 12,
+                    decoration: BoxDecoration(
+                      color: _getStatusColor(status),
+                      shape: BoxShape.circle,
+                    ),
+                  ),
+                  const SizedBox(width: 4),
+                  Text(
+                    _getStatusText(status),
+                    style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+                  ),
+                ],
+              );
+            }).toList(),
           ),
         ],
       ),
@@ -557,6 +666,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
                               children: [
                                 _buildCalendarGrid(currentMonth),
                                 _buildSelectedDayDetails(),
+                                _buildLegend(),
                               ],
                             ),
                           ),
