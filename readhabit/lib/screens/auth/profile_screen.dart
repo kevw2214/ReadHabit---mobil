@@ -44,11 +44,31 @@ class _ProfileScreenState extends State<ProfileScreen> {
     _editedSettings = widget.settings;
   }
 
-  void _handleSaveProfile() {
-    widget.onUpdateUser(_editedUser);
-    setState(() {
-      _currentView = ProfileView.main;
-    });
+  void _handleSaveProfile() async {
+    // Validar datos antes de guardar
+    if (_editedUser.name.trim().isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('El nombre no puede estar vacío'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    try {
+      await widget.onUpdateUser(_editedUser);
+      setState(() {
+        _currentView = ProfileView.main;
+      });
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error al guardar: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
   }
 
   void _handleSaveSettings() {

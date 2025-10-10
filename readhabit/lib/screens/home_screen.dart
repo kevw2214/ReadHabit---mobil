@@ -675,16 +675,19 @@ class ProfileTab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final authProvider = Provider.of<AuthProvider>(context);
+    final userLibraryProvider = Provider.of<UserLibraryProvider>(context);
+    final readingProvider = Provider.of<ReadingProvider>(context, listen: false);
 
+    // Crear usuario con datos reales desde AuthProvider y estadísticas desde UserLibraryProvider
     final user = AppUser(
       uid: authProvider.user?.uid ?? '',
       name: authProvider.user?.displayName ?? 'Usuario',
       email: authProvider.user?.email ?? '',
-      bio: 'Apasionado por la lectura',
-      currentStreak: 7,
-      longestStreak: 15,
-      totalBooksCompleted: 3,
-      totalChaptersRead: 45,
+      bio: 'Apasionado por la lectura', // TODO: Obtener bio real del usuario cuando esté disponible
+      currentStreak: readingProvider.currentStreak,
+      longestStreak: readingProvider.longestStreak,
+      totalBooksCompleted: userLibraryProvider.completedBooks.length,
+      totalChaptersRead: _calculateTotalChaptersRead(userLibraryProvider),
       joinDate: authProvider.user?.metadata.creationTime ?? DateTime.now(),
     );
 
@@ -693,11 +696,35 @@ class ProfileTab extends StatelessWidget {
     return ProfileScreen(
       user: user,
       settings: settings,
-      onUpdateUser: (updatedUser) {
-        // TODO: Implementar actualización de usuario
+      onUpdateUser: (updatedUser) async {
+        final success = await authProvider.updateUserProfile(
+          updatedUser.name,
+          updatedUser.email,
+        );
+        if (success) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Perfil actualizado correctamente'),
+              backgroundColor: Colors.green,
+            ),
+          );
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Error al actualizar perfil: ${authProvider.errorMessage}'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
       },
       onUpdateSettings: (updatedSettings) {
-        // TODO: Implementar actualización de configuración
+        // TODO: Implementar actualización de configuración en una futura versión
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Configuración guardada (funcionalidad próximamente)'),
+            backgroundColor: Colors.blue,
+          ),
+        );
       },
       onLogout: () async {
         final success = await authProvider.signOut();
@@ -721,5 +748,17 @@ class ProfileTab extends StatelessWidget {
         Navigator.pushNamed(context, '/$screen');
       },
     );
+  }
+
+  // Método auxiliar para calcular capítulos totales leídos
+  int _calculateTotalChaptersRead(UserLibraryProvider libraryProvider) {
+    int totalChapters = 0;
+    for (var userBook in libraryProvider.booksInProgress) {
+      totalChapters += userBook.currentChapter;
+    }
+    for (var userBook in libraryProvider.completedBooks) {
+      totalChapters += userBook.totalChapters;
+    }
+    return totalChapters;
   }
 }
