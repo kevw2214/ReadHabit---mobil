@@ -14,11 +14,16 @@ import 'utils/app_routes.dart';
 import 'utils/shared_prefs_helper.dart';
 import 'screens/auth/welcome_screen.dart';
 import 'package:intl/date_symbol_data_local.dart';
+import 'services/auth_manager.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   await initializeDateFormatting('es_ES');
+
+  // Inicializar el AuthManager singleton
+  AuthManager.instance;
+
   runApp(const MyApp());
 }
 
@@ -123,7 +128,8 @@ class _AuthWrapperState extends State<AuthWrapper> {
 
         if (!isAuthenticated) {
           WidgetsBinding.instance.addPostFrameCallback((_) {
-            if (mounted && Navigator.canPop(context)) {
+            if (mounted) {
+              // Siempre intentar navegar a welcome cuando se cierre sesión
               Navigator.of(
                 context,
               ).pushNamedAndRemoveUntil('/welcome', (route) => false);

@@ -3,229 +3,64 @@ import 'dart:async';
 
 import 'package:flutter/foundation.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import '../services/firebase_auth_service.dart';
-import '../utils/shared_prefs_helper.dart';
+import '../services/auth_manager.dart';
 
 class AuthProvider with ChangeNotifier {
-  final FirebaseAuthService _authService = FirebaseAuthService();
-
-  User? _user;
-  bool _isLoading = false;
-  String? _errorMessage;
-  final StreamController<bool> _authStateController =
-      StreamController<bool>.broadcast();
+  final AuthManager _authManager = AuthManager.instance;
 
   // Getters
-  User? get user => _user;
-  bool get isLoading => _isLoading;
-  String? get errorMessage => _errorMessage;
-  bool get isAuthenticated => _user != null;
-  Stream<bool> get authStateChanges => _authStateController.stream;
+  User? get user => _authManager.currentUser;
+  bool get isLoading => _authManager.isLoading;
+  String? get errorMessage => _authManager.errorMessage;
+  bool get isAuthenticated => _authManager.isAuthenticated;
+  Stream<bool> get authStateChanges => _authManager.authStateChanges;
 
   // Constructor
   AuthProvider() {
-    _checkAuthState();
-  }
-
-  // Verificar estado de autenticación al iniciar
-  Future<void> _checkAuthState() async {
-    _isLoading = true;
-    notifyListeners();
-
-    try {
-      // Verificar si el usuario ya estaba logueado
-      bool wasLoggedIn = await SharedPrefsHelper.isLoggedIn();
-
-      if (wasLoggedIn) {
-        // Escuchar cambios en el estado de autenticación
-        _authService.authStateChanges.listen((User? user) {
-          _user = user;
-          if (user != null) {
-            _saveUserToPrefs(user);
-            _notifyAuthStateChange(true);
-          } else {
-            _clearUserState();
-            _notifyAuthStateChange(false);
-          }
-          _isLoading = false;
-          notifyListeners();
-        });
-      } else {
-        _isLoading = false;
-        notifyListeners();
-      }
-    } catch (e) {
-      _isLoading = false;
-      _errorMessage = 'Error al verificar autenticación: $e';
+    // El AuthManager ya está inicializado como singleton
+    // Solo necesitamos escuchar sus cambios para notificar a los listeners de Flutter
+    _authManager.userChanges.listen((_) {
       notifyListeners();
-    }
+    });
   }
 
   // Iniciar sesión
   Future<bool> signIn(String email, String password) async {
-    _isLoading = true;
-    _errorMessage = null;
+    final result = await _authManager.signIn(email, password);
     notifyListeners();
-
-    try {
-      User? user = await _authService.signInWithEmailAndPassword(
-        email,
-        password,
-      );
-
-      if (user != null) {
-        _user = user;
-        await _saveUserToPrefs(user);
-        await SharedPrefsHelper.setLoggedIn(true);
-        _notifyAuthStateChange(true);
-        _isLoading = false;
-        notifyListeners();
-        return true;
-      } else {
-        _errorMessage = 'Error al iniciar sesión';
-        _isLoading = false;
-        notifyListeners();
-        return false;
-      }
-    } catch (e) {
-      _errorMessage = e.toString();
-      _isLoading = false;
-      notifyListeners();
-      return false;
-    }
+    return result;
   }
 
   // Registrarse
   Future<bool> signUp(String name, String email, String password) async {
-    _isLoading = true;
-    _errorMessage = null;
+    final result = await _authManager.signUp(name, email, password);
     notifyListeners();
-
-    try {
-      User? user = await _authService.createUserWithEmailAndPassword(
-        name,
-        email,
-        password,
-      );
-
-      if (user != null) {
-        _user = user;
-        await _saveUserToPrefs(user);
-        await SharedPrefsHelper.setLoggedIn(true);
-        _notifyAuthStateChange(true);
-        _isLoading = false;
-        notifyListeners();
-        return true;
-      } else {
-        _errorMessage = 'Error al registrarse';
-        _isLoading = false;
-        notifyListeners();
-        return false;
-      }
-    } catch (e) {
-      _errorMessage = e.toString();
-      _isLoading = false;
-      notifyListeners();
-      return false;
-    }
+    return result;
   }
 
+  // Cerrar sesión
   Future<bool> signOut() async {
-    _isLoading = true;
+    final result = await _authManager.signOut();
     notifyListeners();
-
-    try {
-      // Primero cerrar sesión en Firebase
-      await _authService.signOut();
-
-      // Limpiar SharedPreferences
-      await SharedPrefsHelper.logout();
-
-      // Limpiar estado local
-      _clearUserState();
-
-      // Notificar cambio de estado
-      _notifyAuthStateChange(false);
-
-      _isLoading = false;
-      notifyListeners();
-
-      return true;
-    } catch (e) {
-      _errorMessage = 'Error al cerrar sesión: $e';
-      _isLoading = false;
-      notifyListeners();
-      return false;
-    }
+    return result;
   }
 
   // Actualizar perfil del usuario
   Future<bool> updateUserProfile(String name, String email) async {
-    if (_user == null) {
-      _errorMessage = 'Usuario no autenticado';
-      notifyListeners();
-      return false;
-    }
-
-    try {
-      // Actualizar en Firebase Auth
-      await _user!.updateDisplayName(name);
-      if (email != _user!.email) {
-        await _user!.updateEmail(email);
-      }
-
-      // Recargar datos del usuario
-      await _user!.reload();
-      // ✅ CORRECTO: Usando la propiedad correcta
-      final updatedUser = _authService.currentUser;
-
-      if (updatedUser != null) {
-        _user = updatedUser;
-        await _saveUserToPrefs(_user!);
-        notifyListeners();
-        return true;
-      } else {
-        _errorMessage = 'Error al recargar datos del usuario';
-        notifyListeners();
-        return false;
-      }
-    } catch (e) {
-      _errorMessage = 'Error al actualizar perfil: $e';
-      notifyListeners();
-      return false;
-    }
-  }
-
-  void _clearUserState() {
-    _user = null;
-    _errorMessage = null;
-  }
-
-  // Notificar cambios en el estado de autenticación
-  void _notifyAuthStateChange(bool isAuthenticated) {
-    if (!_authStateController.isClosed) {
-      _authStateController.add(isAuthenticated);
-    }
+    final result = await _authManager.updateUserProfile(name, email);
+    notifyListeners();
+    return result;
   }
 
   // Limpiar error
   void clearError() {
-    _errorMessage = null;
+    _authManager.clearError();
     notifyListeners();
-  }
-
-  // Guardar información del usuario en SharedPreferences
-  Future<void> _saveUserToPrefs(User user) async {
-    await SharedPrefsHelper.saveUserInfo(
-      userId: user.uid,
-      email: user.email ?? '',
-      name: user.displayName ?? '',
-    );
   }
 
   @override
   void dispose() {
-    _authStateController.close();
+    // No necesitamos cerrar streams aquí ya que el AuthManager es singleton
     super.dispose();
   }
 }

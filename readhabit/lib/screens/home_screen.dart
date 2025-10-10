@@ -706,9 +706,30 @@ class ProfileTab extends StatelessWidget {
     return ProfileScreen(
       user: user,
       settings: settings,
-      onUpdateUser: (updatedUser) {},
-      onUpdateSettings: (updatedSettings) {},
-      onLogout: () async {},
+      onUpdateUser: (updatedUser) {
+        // TODO: Implementar actualización de usuario
+      },
+      onUpdateSettings: (updatedSettings) {
+        // TODO: Implementar actualización de configuración
+      },
+      onLogout: () async {
+        final success = await authProvider.signOut();
+        if (success) {
+          // Navegar a la pantalla de welcome después del logout
+          Navigator.of(context).pushNamedAndRemoveUntil(
+            '/welcome',
+            (route) => false,
+          );
+        } else {
+          // Mostrar error si el logout falla
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Error al cerrar sesión'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      },
       onNavigate: (screen) {
         Navigator.pushNamed(context, '/$screen');
       },
