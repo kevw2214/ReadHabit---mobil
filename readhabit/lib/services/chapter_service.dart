@@ -1,4 +1,3 @@
-// lib/services/chapter_service.dart CON CONTENIDO NARRATIVO
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -7,15 +6,12 @@ class ChapterService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   static const String _chaptersCollection = 'book_chapters';
 
-  /// Obtener contenido del capítulo basado en información de la API
   Future<String> getChapterContent(String bookId, int chapter) async {
     try {
       print('DEBUG: Generando capítulo ${chapter + 1} del libro $bookId');
 
-      // Sanitizar bookId para Firebase
       String sanitizedBookId = _sanitizeBookIdForFirebase(bookId);
 
-      // Primero intentar obtener de Firebase cache
       final cachedContent = await _getCachedChapterContent(
         sanitizedBookId,
         chapter,
@@ -25,13 +21,10 @@ class ChapterService {
         return cachedContent;
       }
 
-      // Obtener información del libro desde Open Library API
       final bookInfo = await _getBookInfoFromAPI(bookId);
 
-      // Generar contenido narrativo basado en la información del libro
       final chapterContent = _generateNarrativeChapter(bookInfo, chapter);
 
-      // Cachear el contenido generado
       await _cacheChapterContent(sanitizedBookId, chapter, chapterContent);
 
       print('DEBUG: Capítulo narrativo generado y cacheado exitosamente');
@@ -42,10 +35,8 @@ class ChapterService {
     }
   }
 
-  /// Obtener información del libro desde Open Library API
   Future<Map<String, dynamic>> _getBookInfoFromAPI(String bookId) async {
     try {
-      // Si el bookId viene con formato /works/XXXXX, extraer solo el ID
       String cleanBookId = bookId.replaceAll('/works/', '').replaceAll('/', '');
 
       final url = 'https://openlibrary.org/works/$cleanBookId.json';
@@ -69,13 +60,11 @@ class ChapterService {
     }
   }
 
-  /// Generar contenido narrativo del capítulo basado en información del libro
   String _generateNarrativeChapter(
     Map<String, dynamic> bookInfo,
     int chapterIndex,
   ) {
     try {
-      // Extraer información relevante
       String title = bookInfo['title'] ?? 'Historia sin título';
       String description = _extractDescription(bookInfo);
       List<String> subjects = _extractSubjects(bookInfo);
@@ -83,7 +72,6 @@ class ChapterService {
           ? subjects.first.toLowerCase()
           : 'ficción';
 
-      // Generar contenido narrativo del capítulo
       return _createNarrativeContent(title, description, genre, chapterIndex);
     } catch (e) {
       print('DEBUG: Error generando contenido narrativo: $e');
@@ -91,7 +79,6 @@ class ChapterService {
     }
   }
 
-  /// Extraer descripción del libro
   String _extractDescription(Map<String, dynamic> bookInfo) {
     if (bookInfo['description'] != null) {
       if (bookInfo['description'] is String) {
@@ -112,7 +99,6 @@ class ChapterService {
     return '';
   }
 
-  /// Extraer temas/géneros del libro
   List<String> _extractSubjects(Map<String, dynamic> bookInfo) {
     List<String> subjects = [];
 
@@ -127,14 +113,12 @@ class ChapterService {
     return subjects.take(3).toList();
   }
 
-  /// Crear contenido narrativo real del capítulo
   String _createNarrativeContent(
     String title,
     String description,
     String genre,
     int chapterIndex,
   ) {
-    // Generar diferentes tipos de capítulos narrativos
     List<String> narrativePatterns = [
       _generateOpeningChapter(title, description, genre, chapterIndex),
       _generateActionChapter(title, description, genre, chapterIndex),
@@ -143,7 +127,6 @@ class ChapterService {
       _generateClimaxChapter(title, description, genre, chapterIndex),
     ];
 
-    // Seleccionar patrón basado en el índice del capítulo
     int patternIndex = chapterIndex % narrativePatterns.length;
     return narrativePatterns[patternIndex];
   }
@@ -378,7 +361,6 @@ Y por primera vez en días, Lucía sintió que podía respirar de nuevo.''';
     return openingsByGenre[genre] ?? openingsByGenre['default']!;
   }
 
-  /// Convertir ID de Open Library a ID válido para Firebase
   String _sanitizeBookIdForFirebase(String bookId) {
     String sanitized = bookId.replaceAll('/', '-').replaceAll('\\', '-');
     sanitized = sanitized.replaceAll(RegExp(r'-+'), '-');
@@ -386,7 +368,6 @@ Y por primera vez en días, Lucía sintió que podía respirar de nuevo.''';
     return sanitized;
   }
 
-  /// Obtener contenido cacheado de Firebase
   Future<String?> _getCachedChapterContent(String bookId, int chapter) async {
     try {
       final docRef = _firestore
@@ -405,7 +386,6 @@ Y por primera vez en días, Lucía sintió que podía respirar de nuevo.''';
     }
   }
 
-  /// Cachear contenido en Firebase
   Future<void> _cacheChapterContent(
     String bookId,
     int chapter,
@@ -429,7 +409,6 @@ Y por primera vez en días, Lucía sintió que podía respirar de nuevo.''';
     }
   }
 
-  /// Contenido narrativo por defecto
   String _getDefaultNarrativeContent(int chapter) {
     return '''Capítulo ${chapter + 1}
 

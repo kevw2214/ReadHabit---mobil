@@ -1,4 +1,3 @@
-// lib/screens/books/reading_screen.dart - ACTUALIZADO
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:readhabit/models/user_book.dart';
@@ -20,7 +19,8 @@ class ReadingScreen extends StatefulWidget {
 class _ReadingScreenState extends State<ReadingScreen> {
   bool _isLoading = false;
   late UserBook _currentUserBook;
-  int _pagesReadInSession = 0; // ✅ Nuevo: Contador de páginas leídas en esta sesión
+  int _pagesReadInSession =
+      0; // ✅ Nuevo: Contador de páginas leídas en esta sesión
 
   @override
   void initState() {
@@ -39,22 +39,16 @@ class _ReadingScreenState extends State<ReadingScreen> {
         backgroundColor: Colors.white,
         elevation: 0,
         iconTheme: const IconThemeData(color: Colors.black),
-        actions: [
-          _buildPauseButton(),
-          // ❌ ELIMINADO: _buildFinishButton() de aquí (ahora está abajo)
-        ],
+        actions: [_buildPauseButton()],
       ),
       body: Container(
         color: const Color(0xFFF5F5F5),
         child: Column(
           children: [
-            // Progress bar
             _buildProgressBar(),
 
-            // Contador de páginas leídas en esta sesión
             _buildSessionProgress(), // ✅ NUEVO: Contador de sesión
 
-            // Chapter content
             Expanded(
               child: Container(
                 margin: const EdgeInsets.all(16),
@@ -74,7 +68,6 @@ class _ReadingScreenState extends State<ReadingScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // Chapter title
                       Text(
                         'Capítulo ${_currentUserBook.currentChapter + 1}',
                         style: const TextStyle(
@@ -85,7 +78,6 @@ class _ReadingScreenState extends State<ReadingScreen> {
                       ),
                       const SizedBox(height: 16),
 
-                      // Chapter content
                       FutureBuilder<String>(
                         key: ValueKey(
                           '${_currentUserBook.book.id}_${_currentUserBook.currentChapter}',
@@ -147,7 +139,7 @@ class _ReadingScreenState extends State<ReadingScreen> {
                                   textAlign: TextAlign.justify,
                                 ),
                                 const SizedBox(height: 20),
-                                // ✅ NUEVO: Botón para registrar páginas leídas
+
                                 _buildPageCounter(),
                               ],
                             );
@@ -164,7 +156,6 @@ class _ReadingScreenState extends State<ReadingScreen> {
               ),
             ),
 
-            // Bottom controls - ✅ ACTUALIZADO con nuevos botones
             _buildBottomControls(),
           ],
         ),
@@ -187,7 +178,6 @@ class _ReadingScreenState extends State<ReadingScreen> {
     );
   }
 
-  // ✅ NUEVO: Contador de progreso de la sesión
   Widget _buildSessionProgress() {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -196,10 +186,7 @@ class _ReadingScreenState extends State<ReadingScreen> {
         children: [
           Text(
             'Páginas leídas en esta sesión:',
-            style: TextStyle(
-              fontSize: 14,
-              color: Colors.grey.shade600,
-            ),
+            style: TextStyle(fontSize: 14, color: Colors.grey.shade600),
           ),
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
@@ -221,7 +208,6 @@ class _ReadingScreenState extends State<ReadingScreen> {
     );
   }
 
-  // ✅ NUEVO: Contador de páginas
   Widget _buildPageCounter() {
     return Card(
       elevation: 2,
@@ -232,10 +218,7 @@ class _ReadingScreenState extends State<ReadingScreen> {
           children: [
             const Text(
               'Registrar páginas leídas',
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 16,
-              ),
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
             ),
             const SizedBox(height: 12),
             Row(
@@ -243,9 +226,7 @@ class _ReadingScreenState extends State<ReadingScreen> {
                 Expanded(
                   child: Text(
                     'Has leído $_pagesReadInSession páginas en esta sesión',
-                    style: TextStyle(
-                      color: Colors.grey.shade600,
-                    ),
+                    style: TextStyle(color: Colors.grey.shade600),
                   ),
                 ),
                 const SizedBox(width: 12),
@@ -280,14 +261,12 @@ class _ReadingScreenState extends State<ReadingScreen> {
     );
   }
 
-  // ✅ ACTUALIZADO: Nuevos botones en la parte inferior
   Widget _buildBottomControls() {
     return Container(
       padding: const EdgeInsets.all(16),
       color: Colors.white,
       child: Row(
         children: [
-          // ✅ NUEVO: Botón "Siguiente Capítulo"
           Expanded(
             child: ElevatedButton.icon(
               onPressed: _isLoading || _isLastChapter() ? null : _nextChapter,
@@ -301,9 +280,13 @@ class _ReadingScreenState extends State<ReadingScreen> {
                       ),
                     )
                   : const Icon(Icons.skip_next),
-              label: Text(_isLastChapter() ? 'Último Capítulo' : 'Siguiente Capítulo'),
+              label: Text(
+                _isLastChapter() ? 'Último Capítulo' : 'Siguiente Capítulo',
+              ),
               style: ElevatedButton.styleFrom(
-                backgroundColor: _isLastChapter() ? Colors.grey : const Color(0xFF1E90FF),
+                backgroundColor: _isLastChapter()
+                    ? Colors.grey
+                    : const Color(0xFF1E90FF),
                 foregroundColor: Colors.white,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
@@ -313,7 +296,7 @@ class _ReadingScreenState extends State<ReadingScreen> {
             ),
           ),
           const SizedBox(width: 16),
-          // ✅ ACTUALIZADO: Botón "Terminar Sesión" (va a preguntas)
+
           Expanded(
             child: ElevatedButton.icon(
               onPressed: _isLoading ? null : _finishSession,
@@ -351,12 +334,11 @@ class _ReadingScreenState extends State<ReadingScreen> {
     );
   }
 
-  // ✅ NUEVO: Método para agregar páginas leídas
   void _addPage() {
     setState(() {
       _pagesReadInSession++;
     });
-    
+
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
         content: Text('+1 página registrada'),
@@ -366,9 +348,9 @@ class _ReadingScreenState extends State<ReadingScreen> {
     );
   }
 
-  // ✅ NUEVO: Verificar si es el último capítulo
   bool _isLastChapter() {
-    return _currentUserBook.currentChapter + 1 >= _currentUserBook.totalChapters;
+    return _currentUserBook.currentChapter + 1 >=
+        _currentUserBook.totalChapters;
   }
 
   Future<void> _pauseReading() async {
@@ -382,7 +364,6 @@ class _ReadingScreenState extends State<ReadingScreen> {
       );
 
       if (authProvider.user != null) {
-        // Guardar progreso actual
         await libraryProvider.updateReadingProgress(
           userBookId: _currentUserBook.id,
           newChapter: _currentUserBook.currentChapter,
@@ -416,7 +397,6 @@ class _ReadingScreenState extends State<ReadingScreen> {
     }
   }
 
-  // ✅ NUEVO: Método para siguiente capítulo
   Future<void> _nextChapter() async {
     setState(() => _isLoading = true);
 
@@ -428,7 +408,6 @@ class _ReadingScreenState extends State<ReadingScreen> {
       );
 
       if (authProvider.user != null) {
-        // Avanzar al siguiente capítulo
         final newChapter = _currentUserBook.currentChapter + 1;
 
         await libraryProvider.updateReadingProgress(
@@ -437,7 +416,6 @@ class _ReadingScreenState extends State<ReadingScreen> {
           userId: authProvider.user!.uid,
         );
 
-        // Reiniciar contador de páginas para el nuevo capítulo
         setState(() {
           _currentUserBook = _currentUserBook.copyWith(
             currentChapter: newChapter,
@@ -471,10 +449,8 @@ class _ReadingScreenState extends State<ReadingScreen> {
     }
   }
 
-  // ✅ ACTUALIZADO: Método para terminar sesión (va a preguntas)
   Future<void> _finishSession() async {
     if (_pagesReadInSession == 0) {
-      // Mostrar confirmación si no se registraron páginas
       final confirmed = await showDialog<bool>(
         context: context,
         builder: (context) => AlertDialog(
@@ -503,21 +479,24 @@ class _ReadingScreenState extends State<ReadingScreen> {
 
     try {
       final authProvider = Provider.of<AuthProvider>(context, listen: false);
-      final readingProvider = Provider.of<ReadingProvider>(context, listen: false);
+      final readingProvider = Provider.of<ReadingProvider>(
+        context,
+        listen: false,
+      );
 
       if (authProvider.user != null) {
-        // Navegar directamente a la pantalla de preguntas
         if (mounted) {
           Navigator.push(
             context,
             MaterialPageRoute(
               builder: (context) => QuestionSessionScreen(
                 book: _currentUserBook.book,
-                chaptersRead: _pagesReadInSession > 0 ? 1 : 0, // 1 capítulo leído
+                chaptersRead: _pagesReadInSession > 0
+                    ? 1
+                    : 0, // 1 capítulo leído
               ),
             ),
           ).then((_) {
-            // Al regresar de las preguntas, volver al home
             Navigator.pop(context);
           });
         }

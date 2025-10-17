@@ -1,4 +1,3 @@
-// screens/profile_screen.dart
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../../models/user_models.dart';
@@ -84,29 +83,37 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Widget _buildMainView() {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Perfil'),
-        backgroundColor: const Color(0xFF1E88E5),
-        foregroundColor: Colors.white,
+        title: const Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Perfil',
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            ),
+            Text(
+              'Tu perfil y configuraciones',
+              style: TextStyle(fontSize: 14, color: Colors.grey),
+            ),
+          ],
+        ),
+        backgroundColor: Colors.white,
         elevation: 0,
+        automaticallyImplyLeading: false,
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Profile Card
             _buildProfileCard(),
             const SizedBox(height: 16),
 
-            // Stats Summary
             _buildStatsSummary(),
             const SizedBox(height: 16),
 
-            // Quick Settings
             _buildQuickSettings(),
             const SizedBox(height: 16),
 
-            // Actions
             _buildActionButtons(),
           ],
         ),
@@ -419,7 +426,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
         padding: const EdgeInsets.all(16),
         child: Column(
           children: [
-            // Profile Picture
             Card(
               child: Padding(
                 padding: const EdgeInsets.all(12),
@@ -467,7 +473,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ),
             const SizedBox(height: 16),
 
-            // Personal Info
             Card(
               child: Padding(
                 padding: const EdgeInsets.all(16),
@@ -510,7 +515,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ),
             const SizedBox(height: 16),
 
-            // Action Buttons
             Row(
               children: [
                 Expanded(
@@ -682,7 +686,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
         padding: const EdgeInsets.all(16),
         child: Column(
           children: [
-            // Notifications
             _buildSettingsSection(Icons.notifications, 'Notificaciones', [
               _buildSwitchSetting(
                 'Recordatorios de lectura',
@@ -697,7 +700,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ]),
             const SizedBox(height: 16),
 
-            // Reminder Time
             _buildSettingsSection(Icons.access_time, 'Hora de recordatorio', [
               DropdownButtonFormField<String>(
                 initialValue: _editedSettings.reminderTime,
@@ -730,7 +732,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ]),
             const SizedBox(height: 16),
 
-            // Weekly Goal
             _buildSettingsSection(Icons.flag, 'Meta semanal', [
               const Text(
                 'Días de lectura por semana',
@@ -766,7 +767,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ]),
             const SizedBox(height: 16),
 
-            // Language
             _buildSettingsSection(Icons.language, 'Idioma', [
               DropdownButtonFormField<String>(
                 initialValue: _editedSettings.language,
@@ -795,7 +795,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ]),
             const SizedBox(height: 16),
 
-            // Save Button
             ElevatedButton(
               onPressed: _handleSaveSettings,
               style: ElevatedButton.styleFrom(

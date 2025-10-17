@@ -1,4 +1,3 @@
-// lib/screens/books/reading_plan_screen.dart CORREGIDO
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../models/user_book.dart';
@@ -45,7 +44,6 @@ class _ReadingPlanScreenState extends State<ReadingPlanScreen> {
         color: const Color(0xFFF5F5F5),
         child: Column(
           children: [
-            // Información del libro
             Container(
               color: Colors.white,
               padding: const EdgeInsets.all(16),
@@ -108,7 +106,6 @@ class _ReadingPlanScreenState extends State<ReadingPlanScreen> {
 
             const SizedBox(height: 16),
 
-            // Configuración del libro
             Container(
               color: Colors.white,
               padding: const EdgeInsets.all(16),
@@ -176,7 +173,6 @@ class _ReadingPlanScreenState extends State<ReadingPlanScreen> {
 
             const SizedBox(height: 16),
 
-            // Horario de lectura
             Container(
               color: Colors.white,
               padding: const EdgeInsets.all(16),
@@ -221,7 +217,6 @@ class _ReadingPlanScreenState extends State<ReadingPlanScreen> {
 
             const Spacer(),
 
-            // Botón de guardar
             Container(
               color: Colors.white,
               padding: const EdgeInsets.all(16),

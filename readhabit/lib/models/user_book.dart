@@ -1,4 +1,3 @@
-// lib/models/user_book.dart - ACTUALIZADO
 import 'package:readhabit/models/book.dart';
 
 enum BookStatus { inProgress, completed, abandoned }
@@ -100,18 +99,22 @@ class UserBook {
       completedDate: completedDate ?? this.completedDate,
       lastReadDate: lastReadDate ?? this.lastReadDate,
       readingPlan: readingPlan ?? this.readingPlan,
-      comprehensionScore: comprehensionScore ?? this.comprehensionScore, // ✅ Nuevo
-      totalQuestionsAnswered: totalQuestionsAnswered ?? this.totalQuestionsAnswered, // ✅ Nuevo
+      comprehensionScore:
+          comprehensionScore ?? this.comprehensionScore, // ✅ Nuevo
+      totalQuestionsAnswered:
+          totalQuestionsAnswered ?? this.totalQuestionsAnswered, // ✅ Nuevo
       correctAnswers: correctAnswers ?? this.correctAnswers, // ✅ Nuevo
     );
   }
 
-  // ✅ NUEVO: Método para actualizar stats de comprensión
-  UserBook updateComprehensionStats(int newCorrectAnswers, int newTotalQuestions) {
+  UserBook updateComprehensionStats(
+    int newCorrectAnswers,
+    int newTotalQuestions,
+  ) {
     final updatedCorrectAnswers = correctAnswers + newCorrectAnswers;
     final updatedTotalQuestions = totalQuestionsAnswered + newTotalQuestions;
-    final updatedScore = updatedTotalQuestions > 0 
-        ? (updatedCorrectAnswers / updatedTotalQuestions) * 100 
+    final updatedScore = updatedTotalQuestions > 0
+        ? (updatedCorrectAnswers / updatedTotalQuestions) * 100
         : 0.0;
 
     return copyWith(
@@ -121,7 +124,6 @@ class UserBook {
     );
   }
 
-  // Cálculos útiles
   double get progressPercentage =>
       totalChapters > 0 ? (currentChapter / totalChapters * 100) : 0;
 
@@ -147,7 +149,6 @@ class UserBook {
     }
   }
 
-  // NUEVO: Getter para nivel de comprensión
   String get comprehensionLevel {
     if (comprehensionScore >= 90) return 'Excelente';
     if (comprehensionScore >= 70) return 'Bueno';

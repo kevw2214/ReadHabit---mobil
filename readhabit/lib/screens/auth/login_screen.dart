@@ -31,7 +31,6 @@ class _LoginScreenState extends State<LoginScreen> {
           padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 16.0),
           child: Column(
             children: [
-              // Header
               Row(
                 children: [
                   const SizedBox(width: 12),
@@ -49,14 +48,12 @@ class _LoginScreenState extends State<LoginScreen> {
 
               const SizedBox(height: 32),
 
-              // Form
               Expanded(
                 child: Form(
                   key: _formKey,
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      // Email field
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -122,7 +119,6 @@ class _LoginScreenState extends State<LoginScreen> {
 
                       const SizedBox(height: 16),
 
-                      // Password field
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -200,7 +196,6 @@ class _LoginScreenState extends State<LoginScreen> {
 
                       const SizedBox(height: 32),
 
-                      // Login button
                       SizedBox(
                         width: double.infinity,
                         height: 40,
@@ -242,7 +237,6 @@ class _LoginScreenState extends State<LoginScreen> {
 
                       const SizedBox(height: 16),
 
-                      // Error message
                       Consumer<AuthProvider>(
                         builder: (context, authProvider, child) {
                           if (authProvider.errorMessage != null) {
@@ -270,7 +264,6 @@ class _LoginScreenState extends State<LoginScreen> {
 
                       const SizedBox(height: 16),
 
-                      // Register link
                       GestureDetector(
                         onTap: () {
                           Navigator.pushReplacementNamed(context, '/register');

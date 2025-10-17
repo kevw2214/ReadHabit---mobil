@@ -4,10 +4,7 @@ import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import '../providers/auth_provider.dart';
 import '../providers/reading_provider.dart';
-import '../providers/user_library_provider.dart';
-import '../models/user_models.dart';
 import '../models/user_book.dart';
-import '../models/book.dart';
 
 class CalendarScreen extends StatefulWidget {
   const CalendarScreen({super.key});
@@ -42,19 +39,17 @@ class _CalendarScreenState extends State<CalendarScreen> {
   }
 
   void _loadReadingHistory() {
-    // Simular datos de lectura - en una app real esto vendría de tu base de datos
     final authProvider = context.read<AuthProvider>();
     if (authProvider.user != null) {
-      final libraryProvider = context.read<UserLibraryProvider>();
       final readingProvider = context.read<ReadingProvider>();
-
-      // Simular algunos días con lectura
+      // Cargar datos reales de lectura desde ReadingProvider o Firestore
+      // Por ahora, simular algunos días con lectura
       final today = DateTime.now();
       for (int i = 0; i < 7; i++) {
         final date = today.subtract(Duration(days: i));
         final dateKey = _formatDateKey(date);
-        if (libraryProvider.booksInProgress.isNotEmpty && i % 2 == 0) {
-          _dailyReadings[dateKey] = [libraryProvider.booksInProgress.first];
+        if (readingProvider.booksInProgress.isNotEmpty && i % 2 == 0) {
+          _dailyReadings[dateKey] = [readingProvider.booksInProgress.first];
         }
       }
     }
@@ -70,10 +65,6 @@ class _CalendarScreenState extends State<CalendarScreen> {
 
   String _formatDay(DateTime date) {
     return DateFormat('d').format(date);
-  }
-
-  String _formatWeekday(DateTime date) {
-    return DateFormat('E', 'es').format(date).substring(0, 1).toUpperCase();
   }
 
   bool _hasReading(DateTime date) {
@@ -440,7 +431,8 @@ class _CalendarScreenState extends State<CalendarScreen> {
                 } else {
                   return ElevatedButton(
                     onPressed: () {
-                      readingProvider.markDailyReading();
+                      final authProvider = context.read<AuthProvider>();
+                      readingProvider.markDailyReading(authProvider.user!.uid);
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.blue.shade600,
@@ -524,10 +516,22 @@ class _CalendarScreenState extends State<CalendarScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Calendario de Lectura'),
-        backgroundColor: const Color(0xFF1E88E5),
-        foregroundColor: Colors.white,
+        title: const Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Calendario',
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            ),
+            Text(
+              'Tu calendario de lectura',
+              style: TextStyle(fontSize: 14, color: Colors.grey),
+            ),
+          ],
+        ),
+        backgroundColor: Colors.white,
         elevation: 0,
+        automaticallyImplyLeading: false,
       ),
       body: SafeArea(
         child: Padding(

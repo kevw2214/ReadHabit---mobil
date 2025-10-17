@@ -1,4 +1,3 @@
-// lib/screens/home_screen.dart - MODIFICADO con navegación a lectura
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:readhabit/screens/books/mybooks_screen.dart';
@@ -10,7 +9,8 @@ import '../widgets/custom_bottom_nav_bar.dart';
 import '../models/user_models.dart';
 import '../models/user_book.dart';
 import '../screens/auth/profile_screen.dart';
-import 'calendar_screen.dart'; 
+import '../services/firebase_auth_service.dart';
+import 'calendar_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -69,7 +69,6 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 }
 
-// Pantalla de Inicio - CON NAVEGACIÓN A LECTURA
 class HomeTab extends StatefulWidget {
   const HomeTab({super.key});
 
@@ -118,7 +117,6 @@ class _HomeTabState extends State<HomeTab> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        // Header con título y racha
                         _buildHeader(
                           authProvider.user!.displayName ?? 'Usuario',
                           readingProvider.currentStreak,
@@ -126,17 +124,14 @@ class _HomeTabState extends State<HomeTab> {
 
                         const SizedBox(height: 20),
 
-                        // Saludo y motivación
                         _buildGreetingSection(),
 
                         const SizedBox(height: 16),
 
-                        // Frase motivacional
                         _buildMotivationalQuote(),
 
                         const SizedBox(height: 24),
 
-                        // Sección de lectura de hoy
                         _buildTodayReadingSection(
                           libraryProvider,
                           readingProvider,
@@ -144,13 +139,11 @@ class _HomeTabState extends State<HomeTab> {
 
                         const SizedBox(height: 24),
 
-                        // Pausa semanal (si aplica)
                         if (!readingProvider.hasCompletedToday)
                           _buildWeeklyPauseSection(),
                         if (!readingProvider.hasCompletedToday)
                           const SizedBox(height: 24),
 
-                        // Libros en progreso
                         _buildBooksInProgressSection(libraryProvider),
                       ],
                     ),
@@ -247,7 +240,6 @@ class _HomeTabState extends State<HomeTab> {
     UserLibraryProvider libraryProvider,
     ReadingProvider readingProvider,
   ) {
-    // Obtener el primer libro en progreso si existe
     final firstBook = libraryProvider.booksInProgress.isNotEmpty
         ? libraryProvider.booksInProgress.first
         : null;
@@ -299,7 +291,6 @@ class _HomeTabState extends State<HomeTab> {
           const SizedBox(height: 16),
 
           if (readingProvider.hasCompletedToday) ...[
-            // Estado completado
             Row(
               children: [
                 Icon(
@@ -321,7 +312,6 @@ class _HomeTabState extends State<HomeTab> {
               ],
             ),
           ] else if (firstBook != null) ...[
-            // Información del libro para leer
             Text(
               firstBook.book.title,
               style: const TextStyle(
@@ -337,7 +327,6 @@ class _HomeTabState extends State<HomeTab> {
             ),
             const SizedBox(height: 12),
 
-            // Progreso del capítulo
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -379,7 +368,6 @@ class _HomeTabState extends State<HomeTab> {
               ],
             ),
           ] else ...[
-            // Estado sin libros
             Column(
               children: [
                 Icon(
@@ -395,7 +383,6 @@ class _HomeTabState extends State<HomeTab> {
                 const SizedBox(height: 8),
                 ElevatedButton(
                   onPressed: () {
-                    // Navegar a la sección de libros (tab index 1)
                     _navigateToBooks();
                   },
                   child: const Text('Agregar libro'),
@@ -610,7 +597,6 @@ class _HomeTabState extends State<HomeTab> {
     );
   }
 
-  // Navegación a la pantalla de lectura
   void _navigateToReading(UserBook userBook) async {
     final result = await Navigator.push(
       context,
@@ -619,10 +605,9 @@ class _HomeTabState extends State<HomeTab> {
       ),
     );
 
-    // Si se completó una lectura, recargar los datos
     if (result == true) {
       _loadData();
-      // Recargar el ReadingProvider también
+
       final readingProvider = Provider.of<ReadingProvider>(
         context,
         listen: false,
@@ -632,7 +617,6 @@ class _HomeTabState extends State<HomeTab> {
   }
 
   void _navigateToBooks() {
-    // Cambiar al tab de libros (index 1)
     if (mounted) {
       final homeState = context.findAncestorStateOfType<_HomeScreenState>();
       homeState?.setState(() {
@@ -659,45 +643,121 @@ class _HomeTabState extends State<HomeTab> {
   }
 }
 
-// CALENDAR TAB SIMPLIFICADO
 class CalendarTab extends StatelessWidget {
   const CalendarTab({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return const CalendarScreen(); // ✅ AHORA FUNCIONA
+    return const CalendarScreen(); // AHORA FUNCIONA
   }
 }
 
-class ProfileTab extends StatelessWidget {
+class ProfileTab extends StatefulWidget {
   const ProfileTab({super.key});
 
   @override
+  State<ProfileTab> createState() => _ProfileTabState();
+}
+
+class _ProfileTabState extends State<ProfileTab> {
+  late Future<AppUser> _userFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUserStats();
+  }
+
+  void _loadUserStats() {
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    if (authProvider.user != null) {
+      _userFuture = FirebaseAuthService.instance
+          .getUserStats(authProvider.user!.uid)
+          .then((stats) {
+            return AppUser(
+              uid: authProvider.user!.uid,
+              name: authProvider.user!.displayName ?? 'Usuario',
+              email: authProvider.user!.email ?? '',
+              bio: 'Apasionado por la lectura',
+              currentStreak: stats['currentStreak'] ?? 0,
+              longestStreak: stats['longestStreak'] ?? 0,
+              totalBooksCompleted: stats['totalBooksRead'] ?? 0,
+              totalChaptersRead: stats['totalChaptersRead'] ?? 0,
+              joinDate:
+                  authProvider.user!.metadata.creationTime ?? DateTime.now(),
+            );
+          });
+    } else {
+      _userFuture = Future.value(
+        AppUser(
+          uid: '',
+          name: 'Usuario',
+          email: '',
+          bio: 'Apasionado por la lectura',
+          currentStreak: 0,
+          longestStreak: 0,
+          totalBooksCompleted: 0,
+          totalChaptersRead: 0,
+          joinDate: DateTime.now(),
+        ),
+      );
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final authProvider = Provider.of<AuthProvider>(context);
+    return FutureBuilder<AppUser>(
+      future: _userFuture,
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Scaffold(
+            body: Center(child: CircularProgressIndicator()),
+          );
+        }
+        if (snapshot.hasError) {
+          return Scaffold(
+            body: Center(child: Text('Error: ${snapshot.error}')),
+          );
+        }
+        final user = snapshot.data!;
+        final settings = UserSettings();
 
-    final user = AppUser(
-      uid: authProvider.user?.uid ?? '',
-      name: authProvider.user?.displayName ?? 'Usuario',
-      email: authProvider.user?.email ?? '',
-      bio: 'Apasionado por la lectura',
-      currentStreak: 7,
-      longestStreak: 15,
-      totalBooksCompleted: 3,
-      totalChaptersRead: 45,
-      joinDate: authProvider.user?.metadata.creationTime ?? DateTime.now(),
-    );
+        return ProfileScreen(
+          user: user,
+          settings: settings,
+          onUpdateUser: (updatedUser) async {
+            final authProvider = context.read<AuthProvider>();
+            final success = await authProvider.updateUserProfile(
+              updatedUser.name,
+              updatedUser.email,
+            );
+            if (success) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Perfil actualizado exitosamente'),
+                ),
+              );
 
-    final settings = UserSettings();
+              await authProvider.refreshCurrentUser();
 
-    return ProfileScreen(
-      user: user,
-      settings: settings,
-      onUpdateUser: (updatedUser) {},
-      onUpdateSettings: (updatedSettings) {},
-      onLogout: () async {},
-      onNavigate: (screen) {
-        Navigator.pushNamed(context, '/$screen');
+              _loadUserStats();
+            } else {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(
+                    'Error al actualizar perfil: ${authProvider.errorMessage}',
+                  ),
+                ),
+              );
+            }
+          },
+          onUpdateSettings: (updatedSettings) {},
+          onLogout: () =>
+              context.read<AuthProvider>().signOut(context: context),
+          onNavigate: (screen) {
+            Navigator.pushNamed(context, '/$screen');
+          },
+        );
       },
     );
   }

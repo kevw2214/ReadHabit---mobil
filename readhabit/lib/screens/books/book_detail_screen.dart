@@ -1,4 +1,3 @@
-// lib/screens/books/book_detail_screen.dart CORREGIDO
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../models/book.dart';
@@ -127,7 +126,6 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Título y autor
           Text(
             widget.book.title,
             style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
@@ -139,7 +137,6 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
           ),
           const SizedBox(height: 16),
 
-          // Información adicional
           Wrap(
             spacing: 16,
             children: [
@@ -164,7 +161,6 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
 
           const SizedBox(height: 24),
 
-          // Sinopsis
           if (widget.book.description != null) ...[
             const Text(
               'Sinopsis',

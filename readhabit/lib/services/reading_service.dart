@@ -1,4 +1,3 @@
-// lib/services/reading_service.dart - ACTUALIZADO CON PAUSA SEMANAL
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
 
@@ -16,7 +15,6 @@ class ReadingService {
         microsecond: 0,
       );
 
-      // Verificar si ya existe un registro para hoy
       final existingDoc = await _firestore
           .collection('daily_readings')
           .where('userId', isEqualTo: userId)
@@ -28,7 +26,6 @@ class ReadingService {
         return false; // Ya existe un registro para hoy
       }
 
-      // Crear registro de lectura diaria
       await _firestore.collection('daily_readings').add({
         'userId': userId,
         'date': today,
@@ -37,7 +34,6 @@ class ReadingService {
         'type': 'reading', // Diferencia entre lectura normal y pausa
       });
 
-      // Actualizar racha del usuario
       await _updateUserStreak(userId);
 
       return true;
@@ -58,7 +54,6 @@ class ReadingService {
         microsecond: 0,
       );
 
-      // Verificar si ya existe un registro para hoy
       final existingDoc = await _firestore
           .collection('daily_readings')
           .where('userId', isEqualTo: userId)
@@ -70,7 +65,6 @@ class ReadingService {
         return false; // Ya existe un registro para hoy
       }
 
-      // Crear registro de pausa semanal
       await _firestore.collection('daily_readings').add({
         'userId': userId,
         'date': today,
@@ -79,7 +73,6 @@ class ReadingService {
         'type': 'weekly_pause', // Marca como pausa semanal
       });
 
-      // Actualizar última fecha de lectura sin romper la racha
       await _updateUserStreakWithPause(userId);
 
       return true;
@@ -111,7 +104,6 @@ class ReadingService {
     try {
       final userRef = _firestore.collection('users').doc(userId);
 
-      // Obtener datos actuales del usuario
       final userDoc = await userRef.get();
       Map<String, dynamic> userData = {};
 
@@ -128,22 +120,16 @@ class ReadingService {
         'yyyy-MM-dd',
       ).format(DateTime.now().subtract(const Duration(days: 1)));
 
-      // Lógica de racha
       if (lastReadingDate == null || lastReadingDate == yesterday) {
-        // Si no hay fecha anterior o leyó ayer, incrementar racha
         currentStreak++;
       } else if (lastReadingDate != today) {
-        // Si no leyó ayer (y no es hoy), reiniciar racha
         currentStreak = 1;
       }
-      // Si lastReadingDate == today, mantener la racha igual
 
-      // Actualizar racha más larga si es necesario
       if (currentStreak > longestStreak) {
         longestStreak = currentStreak;
       }
 
-      // Actualizar datos del usuario
       await userRef.set({
         'currentStreak': currentStreak,
         'longestStreak': longestStreak,
@@ -164,7 +150,6 @@ class ReadingService {
       final userRef = _firestore.collection('users').doc(userId);
       final today = DateFormat('yyyy-MM-dd').format(DateTime.now());
 
-      // Solo actualizar la fecha, mantener la racha intacta
       await userRef.update({
         'lastReadingDate': today,
         'updatedAt': FieldValue.serverTimestamp(),
@@ -198,7 +183,6 @@ class ReadingService {
     }
   }
 
-  // Método para obtener estadísticas de lectura del usuario
   Future<Map<String, dynamic>> getUserReadingStats(String userId) async {
     try {
       final userDoc = await _firestore.collection('users').doc(userId).get();
@@ -233,7 +217,6 @@ class ReadingService {
     }
   }
 
-  // Método para obtener histórico de lecturas
   Future<List<Map<String, dynamic>>> getReadingHistory(
     String userId, {
     int limit = 30,

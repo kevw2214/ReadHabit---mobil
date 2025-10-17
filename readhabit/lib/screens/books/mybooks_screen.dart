@@ -1,4 +1,3 @@
-// lib/screens/books/my_books_screen.dart COMPLETO
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:readhabit/screens/books/reading_plan_screens.dart';
@@ -81,10 +80,8 @@ class _MyBooksScreenState extends State<MyBooksScreen>
 
           return Column(
             children: [
-              // Estadísticas
               _buildStatisticsSection(libraryProvider),
 
-              // Tabs
               Container(
                 color: Colors.white,
                 child: TabBar(
@@ -106,7 +103,6 @@ class _MyBooksScreenState extends State<MyBooksScreen>
                 ),
               ),
 
-              // Contenido de las tabs
               Expanded(
                 child: TabBarView(
                   controller: _tabController,

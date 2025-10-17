@@ -1,4 +1,3 @@
-// lib/models/book_category.dart
 enum BookCategory {
   populares('Populares'),
   ficcion('Ficción'),

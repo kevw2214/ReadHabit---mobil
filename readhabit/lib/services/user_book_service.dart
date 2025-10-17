@@ -1,4 +1,3 @@
-// lib/services/user_book_service.dart
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/user_book.dart';
 import '../models/book.dart';
@@ -8,7 +7,6 @@ class UserBookService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   static const String _collection = 'user_books';
 
-  // Agregar libro a la biblioteca del usuario
   Future<void> addBookToLibrary({
     required String userId,
     required Book book,
@@ -34,7 +32,6 @@ class UserBookService {
     }
   }
 
-  // Obtener libros del usuario por estado
   Future<List<UserBook>> getUserBooks(
     String userId, {
     BookStatus? status,
@@ -62,17 +59,14 @@ class UserBookService {
     }
   }
 
-  // Obtener libros en progreso
   Future<List<UserBook>> getBooksInProgress(String userId) async {
     return getUserBooks(userId, status: BookStatus.inProgress);
   }
 
-  // Obtener libros completados
   Future<List<UserBook>> getCompletedBooks(String userId) async {
     return getUserBooks(userId, status: BookStatus.completed);
   }
 
-  // Actualizar progreso de lectura
   Future<void> updateReadingProgress({
     required String userBookId,
     required int newChapter,
@@ -89,7 +83,6 @@ class UserBookService {
     }
   }
 
-  // Marcar libro como completado
   Future<void> markBookAsCompleted(String userBookId) async {
     try {
       final updates = <String, dynamic>{
@@ -104,7 +97,6 @@ class UserBookService {
     }
   }
 
-  // Abandonar libro
   Future<void> abandonBook(String userBookId) async {
     try {
       final updates = <String, dynamic>{
@@ -118,7 +110,6 @@ class UserBookService {
     }
   }
 
-  // Eliminar libro de la biblioteca
   Future<void> removeBookFromLibrary(String userBookId) async {
     try {
       await _firestore.collection(_collection).doc(userBookId).delete();
@@ -127,7 +118,6 @@ class UserBookService {
     }
   }
 
-  // Obtener estadísticas de lectura
   Future<ReadingStatistics> getReadingStatistics(String userId) async {
     try {
       final userBooks = await getUserBooks(userId);
@@ -137,7 +127,6 @@ class UserBookService {
     }
   }
 
-  // Verificar si el usuario ya tiene el libro
   Future<bool> userHasBook(String userId, String bookId) async {
     try {
       final snapshot = await _firestore
@@ -152,7 +141,6 @@ class UserBookService {
     }
   }
 
-  // Actualizar plan de lectura
   Future<void> updateReadingPlan(String userBookId, int chaptersPerDay) async {
     try {
       await _firestore.collection(_collection).doc(userBookId).update({
@@ -163,7 +151,6 @@ class UserBookService {
     }
   }
 
-  // Stream para escuchar cambios en tiempo real
   Stream<List<UserBook>> getUserBooksStream(String userId) {
     return _firestore
         .collection(_collection)

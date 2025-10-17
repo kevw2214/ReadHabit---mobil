@@ -1,4 +1,3 @@
-// lib/models/reading_session.dart
 import 'question_result.dart'; // ✅ Importación correcta
 
 class ReadingSession {
@@ -30,7 +29,6 @@ class ReadingSession {
     this.totalQuestions = 0,
   });
 
-  // Constructor para sesiones con preguntas
   factory ReadingSession.withQuestions({
     required String id,
     required String userId,
@@ -43,7 +41,7 @@ class ReadingSession {
     required double comprehensionScore,
   }) {
     final correctAnswers = questionResults.where((r) => r.isCorrect).length;
-    
+
     return ReadingSession(
       id: id,
       userId: userId,
@@ -60,7 +58,6 @@ class ReadingSession {
     );
   }
 
-  // Constructor para sesiones normales (sin preguntas)
   factory ReadingSession.normal({
     required String id,
     required String userId,
@@ -86,14 +83,16 @@ class ReadingSession {
     );
   }
 
-  factory ReadingSession.fromFirestore(Map<String, dynamic> json, String documentId) {
-    // Parsear questionResults
+  factory ReadingSession.fromFirestore(
+    Map<String, dynamic> json,
+    String documentId,
+  ) {
     final List<QuestionResult> questionResults = [];
     if (json['questionResults'] != null) {
       questionResults.addAll(
-        (json['questionResults'] as List).map((resultJson) =>
-          QuestionResult.fromJson(resultJson)
-        ).toList()
+        (json['questionResults'] as List)
+            .map((resultJson) => QuestionResult.fromJson(resultJson))
+            .toList(),
       );
     }
 
@@ -121,7 +120,9 @@ class ReadingSession {
       'pagesRead': pagesRead,
       'timeSpent': timeSpent,
       'sessionDate': sessionDate.toIso8601String(),
-      'questionResults': questionResults.map((result) => result.toJson()).toList(),
+      'questionResults': questionResults
+          .map((result) => result.toJson())
+          .toList(),
       'comprehensionScore': comprehensionScore,
       'sessionType': sessionType,
       'correctAnswers': correctAnswers,
@@ -129,12 +130,13 @@ class ReadingSession {
     };
   }
 
-  // Getters útiles
   bool get hasQuestions => sessionType == 'with_questions';
   bool get isPerfectScore => comprehensionScore == 100.0;
   double get averageTimePerQuestion {
     if (questionResults.isEmpty) return 0.0;
-    final totalTime = questionResults.map((r) => r.timeSpent).reduce((a, b) => a + b);
+    final totalTime = questionResults
+        .map((r) => r.timeSpent)
+        .reduce((a, b) => a + b);
     return totalTime / questionResults.length;
   }
 }

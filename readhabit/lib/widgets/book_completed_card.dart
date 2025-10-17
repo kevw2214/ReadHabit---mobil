@@ -1,4 +1,3 @@
-// lib/widgets/book_completed_card.dart
 import 'package:flutter/material.dart';
 import '../models/user_book.dart';
 import 'package:intl/intl.dart';
@@ -27,7 +26,6 @@ class BookCompletedCard extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Encabezado con título e ícono de completado
               Row(
                 children: [
                   Expanded(
@@ -71,7 +69,6 @@ class BookCompletedCard extends StatelessWidget {
 
               const SizedBox(height: 8),
 
-              // Categoría y total de capítulos
               Row(
                 children: [
                   Container(
@@ -102,7 +99,6 @@ class BookCompletedCard extends StatelessWidget {
 
               const SizedBox(height: 16),
 
-              // Fecha de finalización
               if (userBook.completedDate != null) ...[
                 Row(
                   children: [

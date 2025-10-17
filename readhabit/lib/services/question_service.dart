@@ -1,4 +1,3 @@
-// lib/services/question_service.dart - VERSIÓN FINAL
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:flutter/foundation.dart';
@@ -9,7 +8,6 @@ class QuestionService {
   static const String _baseUrl = 'https://api.openai.com/v1/chat/completions';
   final String? apiKey;
 
-  // ✅ Constructor con parámetro opcional
   QuestionService([this.apiKey]);
 
   Future<List<Question>> generateQuestions({
@@ -18,14 +16,15 @@ class QuestionService {
     required int totalChapters,
     int questionCount = 3,
   }) async {
-    // ✅ Verificar si tenemos API key válida
     if (apiKey == null || apiKey!.isEmpty) {
       debugPrint('No hay API key - Usando preguntas mock');
       return _generateMockQuestions(book, chaptersRead, questionCount);
     }
 
     try {
-      debugPrint('🔄 Generando preguntas con IA para capítulo $chaptersRead...');
+      debugPrint(
+        '🔄 Generando preguntas con IA para capítulo $chaptersRead...',
+      );
       return await _generateQuestionsWithAI(
         book: book,
         chaptersRead: chaptersRead,
@@ -44,7 +43,8 @@ class QuestionService {
     required int totalChapters,
     required int questionCount,
   }) async {
-    final prompt = '''
+    final prompt =
+        '''
     Genera $questionCount preguntas de comprensión lectora ESPECÍFICAS del CAPÍTULO $chaptersRead 
     del libro "${book.title}" del autor ${book.author}. 
     
@@ -87,7 +87,7 @@ class QuestionService {
       body: jsonEncode({
         'model': 'gpt-3.5-turbo',
         'messages': [
-          {'role': 'user', 'content': prompt}
+          {'role': 'user', 'content': prompt},
         ],
         'temperature': 0.7,
         'max_tokens': 2000,
@@ -98,7 +98,7 @@ class QuestionService {
       final data = jsonDecode(response.body);
       final content = data['choices'][0]['message']['content'];
       debugPrint('✅ Respuesta de IA recibida: ${content.length} caracteres');
-      
+
       final questionsData = jsonDecode(content);
       return _parseQuestions(questionsData, book.id, chaptersRead);
     } else {
@@ -107,14 +107,20 @@ class QuestionService {
     }
   }
 
-  List<Question> _parseQuestions(Map<String, dynamic> data, String bookId, int chapter) {
+  List<Question> _parseQuestions(
+    Map<String, dynamic> data,
+    String bookId,
+    int chapter,
+  ) {
     final List<dynamic> questionsJson = data['questions'];
-    debugPrint('✅ Parseando ${questionsJson.length} preguntas para capítulo $chapter');
-    
+    debugPrint(
+      '✅ Parseando ${questionsJson.length} preguntas para capítulo $chapter',
+    );
+
     return questionsJson.asMap().entries.map((entry) {
       final index = entry.key;
       final q = entry.value;
-      
+
       return Question(
         id: '${bookId}_ch${chapter}_q${index + 1}',
         bookId: bookId,
@@ -129,32 +135,35 @@ class QuestionService {
     }).toList();
   }
 
-  // Preguntas mock mejoradas (fallback)
   List<Question> _generateMockQuestions(Book book, int chapter, int count) {
     final mockQuestions = [
       {
-        'text': '¿Qué evento importante ocurre en el capítulo $chapter de "${book.title}"?',
+        'text':
+            '¿Qué evento importante ocurre en el capítulo $chapter de "${book.title}"?',
         'options': [
           'Se revela un secreto crucial',
           'Un personaje toma una decisión difícil',
           'Ocurre un enfrentamiento clave',
-          'Se introduce un nuevo personaje'
+          'Se introduce un nuevo personaje',
         ],
         'correct': 0,
-        'explanation': 'Este capítulo contiene una revelación que cambia el curso de la historia.',
-        'difficulty': 'medium'
+        'explanation':
+            'Este capítulo contiene una revelación que cambia el curso de la historia.',
+        'difficulty': 'medium',
       },
       {
-        'text': '¿Cómo evoluciona el personaje principal en el capítulo $chapter?',
+        'text':
+            '¿Cómo evoluciona el personaje principal en el capítulo $chapter?',
         'options': [
           'Aprende una lección importante',
           'Enfrenta sus miedos',
           'Toma una acción decisiva',
-          'Reflexiona sobre sus errores'
+          'Reflexiona sobre sus errores',
         ],
         'correct': 2,
-        'explanation': 'El protagonista demuestra crecimiento al tomar una acción crucial.',
-        'difficulty': 'hard'
+        'explanation':
+            'El protagonista demuestra crecimiento al tomar una acción crucial.',
+        'difficulty': 'hard',
       },
       {
         'text': '¿Qué ambiente predomina en el capítulo $chapter?',
@@ -162,17 +171,18 @@ class QuestionService {
           'De suspense y misterio',
           'De acción y movimiento',
           'De reflexión interna',
-          'De diálogo y desarrollo'
+          'De diálogo y desarrollo',
         ],
         'correct': 0,
-        'explanation': 'El capítulo mantiene un tono de suspense que mantiene al lector intrigado.',
-        'difficulty': 'easy'
+        'explanation':
+            'El capítulo mantiene un tono de suspense que mantiene al lector intrigado.',
+        'difficulty': 'easy',
       },
     ];
 
     return List.generate(count, (index) {
       final mock = mockQuestions[index % mockQuestions.length];
-      
+
       return Question(
         id: '${book.id}_ch${chapter}_mock_${index + 1}',
         bookId: book.id,

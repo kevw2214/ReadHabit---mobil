@@ -1,4 +1,3 @@
-// lib/services/google_books_service.dart
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import '../models/book.dart';
@@ -75,7 +74,6 @@ class GoogleBooksService {
     }
   }
 
-  // Obtener detalles específicos de un libro
   Future<Book?> getBookDetails(String bookId) async {
     try {
       final url = Uri.parse('$_baseUrl/volumes/$bookId');

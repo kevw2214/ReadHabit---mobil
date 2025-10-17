@@ -1,13 +1,12 @@
-// lib/providers/auth_provider.dart
 import 'dart:async';
 
-import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../services/firebase_auth_service.dart';
 import '../utils/shared_prefs_helper.dart';
 
 class AuthProvider with ChangeNotifier {
-  final FirebaseAuthService _authService = FirebaseAuthService();
+  final FirebaseAuthService _authService = FirebaseAuthService.instance;
 
   User? _user;
   bool _isLoading = false;
@@ -15,29 +14,24 @@ class AuthProvider with ChangeNotifier {
   final StreamController<bool> _authStateController =
       StreamController<bool>.broadcast();
 
-  // Getters
   User? get user => _user;
   bool get isLoading => _isLoading;
   String? get errorMessage => _errorMessage;
   bool get isAuthenticated => _user != null;
   Stream<bool> get authStateChanges => _authStateController.stream;
 
-  // Constructor
   AuthProvider() {
     _checkAuthState();
   }
 
-  // Verificar estado de autenticación al iniciar
   Future<void> _checkAuthState() async {
     _isLoading = true;
     notifyListeners();
 
     try {
-      // Verificar si el usuario ya estaba logueado
       bool wasLoggedIn = await SharedPrefsHelper.isLoggedIn();
 
       if (wasLoggedIn) {
-        // Escuchar cambios en el estado de autenticación
         _authService.authStateChanges.listen((User? user) {
           _user = user;
           if (user != null) {
@@ -61,7 +55,6 @@ class AuthProvider with ChangeNotifier {
     }
   }
 
-  // Iniciar sesión
   Future<bool> signIn(String email, String password) async {
     _isLoading = true;
     _errorMessage = null;
@@ -95,7 +88,6 @@ class AuthProvider with ChangeNotifier {
     }
   }
 
-  // Registrarse
   Future<bool> signUp(String name, String email, String password) async {
     _isLoading = true;
     _errorMessage = null;
@@ -130,25 +122,25 @@ class AuthProvider with ChangeNotifier {
     }
   }
 
-  Future<bool> signOut() async {
+  Future<bool> signOut({BuildContext? context}) async {
     _isLoading = true;
     notifyListeners();
 
     try {
-      // Primero cerrar sesión en Firebase
       await _authService.signOut();
 
-      // Limpiar SharedPreferences
       await SharedPrefsHelper.logout();
 
-      // Limpiar estado local
       _clearUserState();
 
-      // Notificar cambio de estado
       _notifyAuthStateChange(false);
 
       _isLoading = false;
       notifyListeners();
+
+      if (context != null) {
+        Navigator.of(context).pushReplacementNamed('/welcome');
+      }
 
       return true;
     } catch (e) {
@@ -159,7 +151,6 @@ class AuthProvider with ChangeNotifier {
     }
   }
 
-  // Actualizar perfil del usuario
   Future<bool> updateUserProfile(String name, String email) async {
     if (_user == null) {
       _errorMessage = 'Usuario no autenticado';
@@ -168,15 +159,12 @@ class AuthProvider with ChangeNotifier {
     }
 
     try {
-      // Actualizar en Firebase Auth
       await _user!.updateDisplayName(name);
       if (email != _user!.email) {
         await _user!.updateEmail(email);
       }
 
-      // Recargar datos del usuario
       await _user!.reload();
-      // ✅ CORRECTO: Usando la propiedad correcta
       final updatedUser = _authService.currentUser;
 
       if (updatedUser != null) {
@@ -201,20 +189,20 @@ class AuthProvider with ChangeNotifier {
     _errorMessage = null;
   }
 
-  // Notificar cambios en el estado de autenticación
   void _notifyAuthStateChange(bool isAuthenticated) {
     if (!_authStateController.isClosed) {
       _authStateController.add(isAuthenticated);
     }
   }
 
-  // Limpiar error
-  void clearError() {
-    _errorMessage = null;
-    notifyListeners();
+  Future<void> refreshCurrentUser() async {
+    if (_user != null) {
+      await _user!.reload();
+      _user = _authService.currentUser;
+      notifyListeners();
+    }
   }
 
-  // Guardar información del usuario en SharedPreferences
   Future<void> _saveUserToPrefs(User user) async {
     await SharedPrefsHelper.saveUserInfo(
       userId: user.uid,

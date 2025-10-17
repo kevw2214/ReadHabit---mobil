@@ -1,4 +1,3 @@
-// lib/models/reading_statistics.dart
 import 'package:readhabit/models/user_book.dart';
 
 class ReadingStatistics {

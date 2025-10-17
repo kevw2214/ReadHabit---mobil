@@ -1,6 +1,4 @@
-// main.dart actualizado CON API KEY
 import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -16,17 +14,14 @@ import 'utils/app_routes.dart';
 import 'utils/shared_prefs_helper.dart';
 import 'screens/auth/welcome_screen.dart';
 import 'package:intl/date_symbol_data_local.dart';
-
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   await initializeDateFormatting('es_ES');
   runApp(const MyApp());
 }
-
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
-
   @override
   Widget build(BuildContext context) {
     return MultiProvider(
@@ -34,8 +29,6 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => AuthProvider()),
         ChangeNotifierProvider(create: (_) => BookProvider()),
         ChangeNotifierProvider(create: (_) => UserLibraryProvider()),
-        
-        // ReadingProvider con userId dinámico
         ChangeNotifierProxyProvider<AuthProvider, ReadingProvider>(
           create: (context) => ReadingProvider(''),
           update: (context, authProvider, readingProvider) {
@@ -46,8 +39,6 @@ class MyApp extends StatelessWidget {
             return readingProvider;
           },
         ),
-        
-        //ACTUALIZADO: QuestionProvider CON API KEY
         ChangeNotifierProvider(
           create: (_) => QuestionProvider(
             QuestionService('--Api Key--'),
@@ -109,18 +100,14 @@ class MyApp extends StatelessWidget {
     );
   }
 }
-
 class AuthWrapper extends StatefulWidget {
   const AuthWrapper({super.key});
-
   @override
   State<AuthWrapper> createState() => _AuthWrapperState();
 }
-
 class _AuthWrapperState extends State<AuthWrapper> {
   bool? _isLoggedIn;
   StreamSubscription<bool>? _authSubscription;
-
   @override
   void initState() {
     super.initState();
@@ -129,7 +116,6 @@ class _AuthWrapperState extends State<AuthWrapper> {
       _listenToAuthChanges();
     });
   }
-
   void _listenToAuthChanges() {
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
     _authSubscription = authProvider.authStateChanges.listen((
@@ -139,7 +125,6 @@ class _AuthWrapperState extends State<AuthWrapper> {
         setState(() {
           _isLoggedIn = isAuthenticated;
         });
-
         if (!isAuthenticated) {
           WidgetsBinding.instance.addPostFrameCallback((_) {
             if (mounted && Navigator.canPop(context)) {
@@ -152,13 +137,11 @@ class _AuthWrapperState extends State<AuthWrapper> {
       }
     });
   }
-
   @override
   void dispose() {
     _authSubscription?.cancel();
     super.dispose();
   }
-
   Future<void> _checkLoginStatus() async {
     try {
       bool loggedIn = await SharedPrefsHelper.isLoggedIn();
@@ -175,7 +158,6 @@ class _AuthWrapperState extends State<AuthWrapper> {
       }
     }
   }
-
   @override
   Widget build(BuildContext context) {
     if (_isLoggedIn == null) {
@@ -185,12 +167,10 @@ class _AuthWrapperState extends State<AuthWrapper> {
         ),
       );
     }
-
     return _isLoggedIn!
         ? const HomeScreen()
         : WelcomeScreen(onNavigate: _handleNavigation);
   }
-
   void _handleNavigation(String screen) {
     if (mounted) {
       Navigator.pushReplacementNamed(context, '/$screen');

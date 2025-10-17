@@ -1,4 +1,3 @@
-// lib/screens/books/book_catalog_screen.dart
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:readhabit/models/user_book.dart';
@@ -47,7 +46,6 @@ class _BookCatalogScreenState extends State<BookCatalogScreen> {
       backgroundColor: const Color(0xFFF5F5F5),
       body: Column(
         children: [
-          // Barra de búsqueda
           Container(
             color: Colors.white,
             padding: const EdgeInsets.all(16),
@@ -74,10 +72,8 @@ class _BookCatalogScreenState extends State<BookCatalogScreen> {
             ),
           ),
 
-          // Filtros de categoría
           _buildCategoryFilters(),
 
-          // Lista de libros
           Expanded(
             child: Consumer<BookProvider>(
               builder: (context, bookProvider, child) {
@@ -384,10 +380,8 @@ class _MyBooksScreenState extends State<MyBooksScreen>
 
           return Column(
             children: [
-              // Estadísticas
               _buildStatisticsSection(libraryProvider),
 
-              // Tabs
               Container(
                 color: Colors.white,
                 child: TabBar(
@@ -409,7 +403,6 @@ class _MyBooksScreenState extends State<MyBooksScreen>
                 ),
               ),
 
-              // Contenido de las tabs
               Expanded(
                 child: TabBarView(
                   controller: _tabController,

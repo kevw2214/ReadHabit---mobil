@@ -1,4 +1,3 @@
-// lib/models/user_models.dart
 class AppUser {
   final String uid;
   final String name;
@@ -69,10 +68,9 @@ class UserSettings {
   }
 }
 
-
 class ReadingDay {
-  final String date; 
-  final String status; 
+  final String date;
+  final String status;
   final String? bookId;
   final int? chapter;
   final bool? correctlyAnswered;

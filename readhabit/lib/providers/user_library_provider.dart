@@ -1,4 +1,3 @@
-// lib/providers/user_library_provider.dart
 import 'dart:async';
 import 'package:flutter/material.dart';
 import '../models/user_book.dart';
@@ -16,14 +15,12 @@ class UserLibraryProvider with ChangeNotifier {
   String? _errorMessage;
   StreamSubscription<List<UserBook>>? _booksSubscription;
 
-  // Getters
   List<UserBook> get booksInProgress => _booksInProgress;
   List<UserBook> get completedBooks => _completedBooks;
   ReadingStatistics? get statistics => _statistics;
   bool get isLoading => _isLoading;
   String? get errorMessage => _errorMessage;
 
-  // Cargar biblioteca del usuario
   Future<void> loadUserLibrary(String userId) async {
     _isLoading = true;
     _errorMessage = null;
@@ -55,7 +52,6 @@ class UserLibraryProvider with ChangeNotifier {
     _statistics = await _userBookService.getReadingStatistics(userId);
   }
 
-  // Escuchar cambios en tiempo real
   void startListeningToUserBooks(String userId) {
     _booksSubscription?.cancel();
     _booksSubscription = _userBookService
@@ -78,7 +74,6 @@ class UserLibraryProvider with ChangeNotifier {
         );
   }
 
-  // Notificar cambios de forma diferida para evitar conflictos con el build
   void _deferNotifyListeners() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       notifyListeners();
@@ -90,14 +85,12 @@ class UserLibraryProvider with ChangeNotifier {
     _booksSubscription = null;
   }
 
-  // Agregar libro a la biblioteca
   Future<bool> addBookToLibrary({
     required String userId,
     required Book book,
     required int readingPlan,
   }) async {
     try {
-      // Verificar si el usuario ya tiene el libro
       final hasBook = await _userBookService.userHasBook(userId, book.id);
       if (hasBook) {
         _errorMessage = 'Ya tienes este libro en tu biblioteca';
@@ -111,7 +104,6 @@ class UserLibraryProvider with ChangeNotifier {
         readingPlan: readingPlan,
       );
 
-      // Recargar biblioteca
       await loadUserLibrary(userId);
       return true;
     } catch (e) {
@@ -121,7 +113,6 @@ class UserLibraryProvider with ChangeNotifier {
     }
   }
 
-  // Actualizar progreso de lectura
   Future<bool> updateReadingProgress({
     required String userBookId,
     required int newChapter,
@@ -133,7 +124,6 @@ class UserLibraryProvider with ChangeNotifier {
         newChapter: newChapter,
       );
 
-      // Recargar biblioteca
       await loadUserLibrary(userId);
       return true;
     } catch (e) {
@@ -143,7 +133,6 @@ class UserLibraryProvider with ChangeNotifier {
     }
   }
 
-  // Continuar leyendo (avanzar un capítulo)
   Future<bool> continueReading({
     required String userBookId,
     required int currentChapter,
@@ -153,10 +142,8 @@ class UserLibraryProvider with ChangeNotifier {
     final newChapter = currentChapter + 1;
 
     if (newChapter >= totalChapters) {
-      // Marcar como completado
       return await markBookAsCompleted(userBookId: userBookId, userId: userId);
     } else {
-      // Actualizar progreso
       return await updateReadingProgress(
         userBookId: userBookId,
         newChapter: newChapter,
@@ -165,7 +152,6 @@ class UserLibraryProvider with ChangeNotifier {
     }
   }
 
-  // Marcar libro como completado
   Future<bool> markBookAsCompleted({
     required String userBookId,
     required String userId,
@@ -181,7 +167,6 @@ class UserLibraryProvider with ChangeNotifier {
     }
   }
 
-  // Abandonar libro
   Future<bool> abandonBook({
     required String userBookId,
     required String userId,
@@ -197,7 +182,6 @@ class UserLibraryProvider with ChangeNotifier {
     }
   }
 
-  // Eliminar libro de la biblioteca
   Future<bool> removeBookFromLibrary({
     required String userBookId,
     required String userId,
@@ -213,7 +197,6 @@ class UserLibraryProvider with ChangeNotifier {
     }
   }
 
-  // Actualizar plan de lectura
   Future<bool> updateReadingPlan({
     required String userBookId,
     required int chaptersPerDay,
@@ -230,7 +213,6 @@ class UserLibraryProvider with ChangeNotifier {
     }
   }
 
-  // Verificar si el usuario tiene un libro
   Future<bool> userHasBook(String userId, String bookId) async {
     try {
       return await _userBookService.userHasBook(userId, bookId);
@@ -241,7 +223,6 @@ class UserLibraryProvider with ChangeNotifier {
     }
   }
 
-  // Limpiar errores
   void clearError() {
     _errorMessage = null;
     _deferNotifyListeners();

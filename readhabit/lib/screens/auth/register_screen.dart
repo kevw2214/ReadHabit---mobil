@@ -36,7 +36,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
           padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 16.0),
           child: Column(
             children: [
-              // Header
               Row(
                 children: [
                   IconButton(
@@ -76,14 +75,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
               const SizedBox(height: 40),
 
-              // Form
               Expanded(
                 child: Form(
                   key: _formKey,
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      // Name field
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -146,7 +143,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
                       const SizedBox(height: 12),
 
-                      // Email field
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -212,7 +208,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
                       const SizedBox(height: 12),
 
-                      // Password field
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -290,7 +285,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
                       const SizedBox(height: 12),
 
-                      // Confirm password field
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -369,7 +363,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
                       const SizedBox(height: 24),
 
-                      // Register button
                       SizedBox(
                         width: double.infinity,
                         height: 36,
@@ -411,7 +404,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
                       const SizedBox(height: 16),
 
-                      // Error message
                       Consumer<AuthProvider>(
                         builder: (context, authProvider, child) {
                           if (authProvider.errorMessage != null) {
@@ -439,7 +431,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
                       const SizedBox(height: 16),
 
-                      // Login link
                       GestureDetector(
                         onTap: () {
                           Navigator.pushReplacementNamed(context, '/login');

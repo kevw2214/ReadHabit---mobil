@@ -1,4 +1,3 @@
-// lib/widgets/book_catalog_card.dart
 import 'package:flutter/material.dart';
 import '../models/book.dart';
 
@@ -26,7 +25,6 @@ class BookCatalogCard extends StatelessWidget {
           padding: const EdgeInsets.all(16),
           child: Row(
             children: [
-              // Portada del libro
               Container(
                 width: 60,
                 height: 90,
@@ -55,7 +53,6 @@ class BookCatalogCard extends StatelessWidget {
 
               const SizedBox(width: 16),
 
-              // Información del libro
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -76,7 +73,6 @@ class BookCatalogCard extends StatelessWidget {
                     ),
                     const SizedBox(height: 8),
 
-                    // Rating y año
                     Row(
                       children: [
                         if (book.rating != null) ...[
@@ -110,7 +106,6 @@ class BookCatalogCard extends StatelessWidget {
 
                     const SizedBox(height: 8),
 
-                    // Categoría
                     Container(
                       padding: const EdgeInsets.symmetric(
                         horizontal: 8,
@@ -133,7 +128,6 @@ class BookCatalogCard extends StatelessWidget {
                 ),
               ),
 
-              // Botón de agregar
               Column(
                 children: [
                   IconButton(

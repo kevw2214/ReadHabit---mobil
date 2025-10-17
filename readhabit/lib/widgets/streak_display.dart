@@ -1,4 +1,3 @@
-// lib/widgets/streak_display.dart
 import 'package:flutter/material.dart';
 
 class StreakDisplay extends StatelessWidget {

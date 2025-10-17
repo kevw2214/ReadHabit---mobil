@@ -6,19 +6,16 @@ class SharedPrefsHelper {
   static const String _userNameKey = 'userName';
   static const String _userIdKey = 'userId';
 
-  // Guardar estado de login
   static Future<void> setLoggedIn(bool isLoggedIn) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool(_isLoggedInKey, isLoggedIn);
   }
 
-  // Obtener estado de login
   static Future<bool> isLoggedIn() async {
     final prefs = await SharedPreferences.getInstance();
     return prefs.getBool(_isLoggedInKey) ?? false;
   }
 
-  // Guardar información del usuario
   static Future<void> saveUserInfo({
     required String userId,
     required String email,
@@ -30,7 +27,6 @@ class SharedPrefsHelper {
     await prefs.setString(_userNameKey, name);
   }
 
-  // Obtener información del usuario
   static Future<Map<String, String?>> getUserInfo() async {
     final prefs = await SharedPreferences.getInstance();
     return {
@@ -40,13 +36,11 @@ class SharedPrefsHelper {
     };
   }
 
-  // Limpiar toda la información guardada
   static Future<void> clearAll() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.clear();
   }
 
-  // Cerrar sesión
   static Future<void> logout() async {
     await setLoggedIn(false);
     await clearAll();

@@ -2,8 +2,19 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class FirebaseAuthService {
+  static FirebaseAuthService? _instance;
+
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+
+  // Constructor privado para prevenir instancias múltiples
+  FirebaseAuthService._internal();
+
+  // Getter para obtener la instancia Singleton
+  static FirebaseAuthService get instance {
+    _instance ??= FirebaseAuthService._internal();
+    return _instance!;
+  }
 
   // Stream para escuchar cambios de estado de autenticación
   Stream<User?> get authStateChanges => _auth.authStateChanges();
@@ -59,6 +70,34 @@ class FirebaseAuthService {
   // Método para cerrar sesión
   Future<void> signOut() async {
     await _auth.signOut();
+  }
+
+  // Método para obtener estadísticas del usuario desde Firestore
+  Future<Map<String, dynamic>> getUserStats(String uid) async {
+    try {
+      DocumentSnapshot doc = await _firestore
+          .collection('users')
+          .doc(uid)
+          .get();
+      if (doc.exists) {
+        return doc.data() as Map<String, dynamic>;
+      } else {
+        return {
+          'currentStreak': 0,
+          'longestStreak': 0,
+          'totalBooksRead': 0,
+          'totalChaptersRead': 0,
+        };
+      }
+    } catch (e) {
+      print('Error al obtener estadísticas del usuario: $e');
+      return {
+        'currentStreak': 0,
+        'longestStreak': 0,
+        'totalBooksRead': 0,
+        'totalChaptersRead': 0,
+      };
+    }
   }
 
   // Método para manejar excepciones de autenticación

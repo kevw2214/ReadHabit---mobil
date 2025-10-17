@@ -1,15 +1,12 @@
-// lib/widgets/book_progress_card.dart
 import 'package:flutter/material.dart';
 import '../models/user_book.dart';
 
 class BookProgressCard extends StatelessWidget {
-  // Para uso en MyBooksScreen (versión completa)
   final UserBook? userBook;
   final VoidCallback? onContinueReading;
   final VoidCallback? onConfigurePlan;
   final VoidCallback? onMoreOptions;
 
-  // Para uso en HomeScreen (versión simplificada)
   final Map<String, dynamic>? bookData;
   final VoidCallback? onTap;
 
@@ -29,17 +26,14 @@ class BookProgressCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Si es la versión simplificada (HomeScreen)
     if (bookData != null) {
       return _buildSimpleCard(context);
     }
 
-    // Si es la versión completa (MyBooksScreen)
     if (userBook != null) {
       return _buildFullCard(context);
     }
 
-    // Fallback
     return const SizedBox.shrink();
   }
 
@@ -57,7 +51,6 @@ class BookProgressCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Portada del libro
             Container(
               height: 160,
               width: 120,
@@ -84,7 +77,6 @@ class BookProgressCard extends StatelessWidget {
             ),
             const SizedBox(height: 8),
 
-            // Información del libro
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -108,7 +100,6 @@ class BookProgressCard extends StatelessWidget {
                   ),
                   const SizedBox(height: 8),
 
-                  // Barra de progreso
                   Container(
                     height: 4,
                     decoration: BoxDecoration(
@@ -128,7 +119,6 @@ class BookProgressCard extends StatelessWidget {
                   ),
                   const SizedBox(height: 4),
 
-                  // Texto de progreso
                   Text(
                     '$currentChapter / $totalChapters',
                     style: TextStyle(
@@ -155,7 +145,6 @@ class BookProgressCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Encabezado con título y menú
             Row(
               children: [
                 Expanded(
@@ -191,7 +180,6 @@ class BookProgressCard extends StatelessWidget {
 
             const SizedBox(height: 8),
 
-            // Categoría
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
               decoration: BoxDecoration(
@@ -210,7 +198,6 @@ class BookProgressCard extends StatelessWidget {
 
             const SizedBox(height: 16),
 
-            // Progreso de capítulos
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -230,7 +217,6 @@ class BookProgressCard extends StatelessWidget {
 
             const SizedBox(height: 8),
 
-            // Barra de progreso
             LinearProgressIndicator(
               value: userBook!.progressPercentage / 100,
               backgroundColor: Colors.grey[200],
@@ -242,7 +228,6 @@ class BookProgressCard extends StatelessWidget {
 
             const SizedBox(height: 16),
 
-            // Estadísticas de lectura
             Row(
               children: [
                 Icon(Icons.schedule, size: 16, color: Colors.grey[600]),
@@ -263,7 +248,6 @@ class BookProgressCard extends StatelessWidget {
 
             const SizedBox(height: 16),
 
-            // Botón de continuar
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(

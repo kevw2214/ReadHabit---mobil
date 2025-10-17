@@ -1,4 +1,3 @@
-// lib/screens/books/question_session_screen.dart - COMPLETO
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../models/book.dart';
@@ -65,7 +64,6 @@ class _QuestionSessionScreenState extends State<QuestionSessionScreen> {
     );
   }
 
-  // ✅ AGREGAR: Método para pantalla de carga
   Widget _buildLoadingScreen() {
     return const Center(
       child: Column(
@@ -73,45 +71,39 @@ class _QuestionSessionScreenState extends State<QuestionSessionScreen> {
         children: [
           CircularProgressIndicator(),
           SizedBox(height: 20),
-          Text(
-            'Generando preguntas...',
-            style: TextStyle(fontSize: 16),
-          ),
+          Text('Generando preguntas...', style: TextStyle(fontSize: 16)),
         ],
       ),
     );
   }
 
-  // ✅ AGREGAR: Método para pantalla de pregunta
   Widget _buildQuestionScreen(QuestionProvider provider) {
     final question = provider.currentQuestion!;
-    
+
     return Padding(
       padding: const EdgeInsets.all(16.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Progreso
           LinearProgressIndicator(
-            value: (provider.currentQuestionIndex + 1) / provider.totalQuestions,
+            value:
+                (provider.currentQuestionIndex + 1) / provider.totalQuestions,
           ),
           const SizedBox(height: 10),
           Text(
             'Pregunta ${provider.currentQuestionIndex + 1} de ${provider.totalQuestions}',
             style: const TextStyle(color: Colors.grey),
           ),
-          
+
           const SizedBox(height: 20),
-          
-          // Pregunta
+
           Text(
             question.questionText,
             style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
           ),
-          
+
           const SizedBox(height: 30),
-          
-          // Opciones
+
           Expanded(
             child: ListView.builder(
               itemCount: question.options.length,
@@ -140,10 +132,9 @@ class _QuestionSessionScreenState extends State<QuestionSessionScreen> {
     );
   }
 
-  // ✅ AGREGAR: Método para pantalla de resultados
   Widget _buildResultsScreen(QuestionProvider provider) {
     final stats = provider.sessionStats;
-    
+
     return Padding(
       padding: const EdgeInsets.all(16.0),
       child: Column(
@@ -154,30 +145,30 @@ class _QuestionSessionScreenState extends State<QuestionSessionScreen> {
             size: 80,
             color: stats['score'] >= 70 ? Colors.green : Colors.orange,
           ),
-          
+
           const SizedBox(height: 20),
-          
+
           Text(
             '¡Sesión Completada!',
             style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
           ),
-          
+
           const SizedBox(height: 30),
-          
+
           Text(
             'Puntuación: ${stats['score'].toStringAsFixed(1)}%',
             style: const TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
           ),
-          
+
           const SizedBox(height: 20),
-          
+
           Text(
             'Correctas: ${stats['correctAnswers']} / ${stats['totalQuestions']}',
             style: const TextStyle(fontSize: 18),
           ),
-          
+
           const SizedBox(height: 40),
-          
+
           ElevatedButton(
             onPressed: () {
               _saveSessionResults(provider);
@@ -193,7 +184,6 @@ class _QuestionSessionScreenState extends State<QuestionSessionScreen> {
     );
   }
 
-  // ✅ AGREGAR: Método para pantalla de error
   Widget _buildErrorScreen(QuestionProvider provider) {
     return Center(
       child: Column(
@@ -217,14 +207,11 @@ class _QuestionSessionScreenState extends State<QuestionSessionScreen> {
     );
   }
 
-  // ✅ CORREGIR: Este método SÍ se usa en _buildResultsScreen
   void _saveSessionResults(QuestionProvider provider) {
     final readingProvider = context.read<ReadingProvider>();
-    
-    // Usar el método que ahora existe
+
     readingProvider.recordComprehensionScore(provider.sessionScore);
-    
-    // En lugar de print, puedes usar debugPrint o logging
+
     debugPrint('Score de comprensión guardado: ${provider.sessionScore}%');
   }
 

@@ -1,4 +1,3 @@
-// lib/models/question_result.dart
 class QuestionResult {
   final String questionId;
   final int selectedAnswer;
@@ -20,7 +19,7 @@ class QuestionResult {
       selectedAnswer: json['selectedAnswer'] ?? -1,
       isCorrect: json['isCorrect'] ?? false,
       timeSpent: json['timeSpent'] ?? 0,
-      answeredAt: json['answeredAt'] != null 
+      answeredAt: json['answeredAt'] != null
           ? DateTime.parse(json['answeredAt'])
           : null,
     );

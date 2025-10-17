@@ -15,7 +15,6 @@ class WelcomeScreen extends StatelessWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              // Logo
               Container(
                 width: 64,
                 height: 64,
@@ -28,7 +27,6 @@ class WelcomeScreen extends StatelessWidget {
 
               const SizedBox(height: 32),
 
-              // Welcome Text
               const Text(
                 'ReadHabit',
                 style: TextStyle(
@@ -67,10 +65,8 @@ class WelcomeScreen extends StatelessWidget {
 
               const SizedBox(height: 48),
 
-              // Buttons
               Column(
                 children: [
-                  // Iniciar sesión button
                   SizedBox(
                     width: double.infinity,
                     height: 40,
@@ -97,7 +93,6 @@ class WelcomeScreen extends StatelessWidget {
 
                   const SizedBox(height: 12),
 
-                  // Registrarse button
                   SizedBox(
                     width: double.infinity,
                     height: 40,

@@ -1,13 +1,12 @@
-// lib/models/question.dart
 class Question {
   final String id;
   final String bookId;
-  final int chapter; // Capítulo específico o 0 para libro completo
+  final int chapter;
   final String questionText;
-  final List<String> options; // [A, B, C, D]
-  final int correctIndex; // 0-3
+  final List<String> options;
+  final int correctIndex;
   final String explanation;
-  final String difficulty; // 'easy', 'medium', 'hard'
+  final String difficulty;
   final DateTime createdAt;
 
   Question({
