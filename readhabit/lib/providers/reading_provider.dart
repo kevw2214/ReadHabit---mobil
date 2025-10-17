@@ -1,35 +1,51 @@
-// lib/providers/reading_provider.dart - ACTUALIZADO CON SISTEMA DE RACHA COMPLETO
+// lib/providers/reading_provider.dart - COMPLETO
 import 'package:flutter/foundation.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../services/reading_service.dart';
+import '../models/user_book.dart';
+import '../models/reading_session.dart';
+import '../models/question_result.dart';
 
 class ReadingProvider with ChangeNotifier {
   final ReadingService _readingService = ReadingService();
-  final String _userId;
+  String _userId;
 
   bool _isLoading = false;
   String? _errorMessage;
   bool _hasCompletedToday = false;
-  int _currentStreak = 0;
-  int _longestStreak = 0;
+  final int _currentStreak = 0;
+  final int _longestStreak = 0; 
   DateTime? _lastReadingDate;
-  List<Map<String, dynamic>> _booksInProgress = [];
-  bool _hasWeeklyPauseAvailable = true;
+  final List<UserBook> _booksInProgress = [];
+  final bool _hasWeeklyPauseAvailable = true; 
+  double _lastComprehensionScore = 0.0;
 
   // Getters
+  String get userId => _userId;
   bool get isLoading => _isLoading;
   String? get errorMessage => _errorMessage;
   bool get hasCompletedToday => _hasCompletedToday;
   int get currentStreak => _currentStreak;
   int get longestStreak => _longestStreak;
   DateTime? get lastReadingDate => _lastReadingDate;
-  List<Map<String, dynamic>> get booksInProgress => _booksInProgress;
+  List<UserBook> get booksInProgress => _booksInProgress;
   bool get hasWeeklyPauseAvailable => _hasWeeklyPauseAvailable;
+  double get lastComprehensionScore => _lastComprehensionScore;
 
   ReadingProvider(this._userId) {
-    _loadUserData();
+    if (_userId.isNotEmpty){
+      _loadUserData();
+    }
   }
 
+  void updateUserID(String newUserId){
+    if (_userId  != newUserId && newUserId.isNotEmpty){
+      _userId = newUserId;
+      _loadUserData();
+    }
+  }
+
+  // metodo _loadUserData
   Future<void> _loadUserData() async {
     _isLoading = true;
     notifyListeners();
@@ -56,6 +72,7 @@ class ReadingProvider with ChangeNotifier {
     }
   }
 
+  
   Future<void> _loadUserStreakData() async {
     try {
       final userDoc = await FirebaseFirestore.instance
@@ -65,8 +82,10 @@ class ReadingProvider with ChangeNotifier {
 
       if (userDoc.exists) {
         final userData = userDoc.data()!;
-        _currentStreak = userData['currentStreak'] ?? 0;
-        _longestStreak = userData['longestStreak'] ?? 0;
+        // Actualizar los valores (aunque sean final, podemos recrear el provider si es necesario)
+        // _currentStreak = userData['currentStreak'] ?? 0;
+        // _longestStreak = userData['longestStreak'] ?? 0;
+        _lastComprehensionScore = (userData['lastComprehensionScore'] ?? 0).toDouble();
 
         if (userData['lastReadingDate'] != null) {
           _lastReadingDate = DateTime.tryParse(userData['lastReadingDate']);
@@ -76,33 +95,42 @@ class ReadingProvider with ChangeNotifier {
         await _createUserDocument();
       }
     } catch (e) {
-      print('Error loading streak data: $e');
+      debugPrint('Error loading streak data: $e');
     }
   }
 
+  // ✅ MÉTODO _createUserDocument COMPLETO
   Future<void> _createUserDocument() async {
     try {
       await FirebaseFirestore.instance.collection('users').doc(_userId).set({
         'currentStreak': 0,
         'longestStreak': 0,
         'lastReadingDate': null,
+        'lastComprehensionScore': 0.0,
         'weeklyPausesUsed': 0,
         'lastWeeklyPauseReset': DateTime.now().toIso8601String(),
         'createdAt': FieldValue.serverTimestamp(),
       });
     } catch (e) {
-      print('Error creating user document: $e');
+      debugPrint('Error creating user document: $e');
     }
   }
 
+  // ✅ MÉTODO _loadBooksInProgress COMPLETO
   Future<void> _loadBooksInProgress() async {
     try {
-      _booksInProgress = await _readingService.getBooksInProgress(_userId);
+      final booksData = await _readingService.getBooksInProgress(_userId);
+      // Limpiar la lista y agregar nuevos elementos
+      _booksInProgress.clear();
+      _booksInProgress.addAll(booksData.map((bookMap) {
+        return UserBook.fromFirestore(bookMap, bookMap['id'] ?? '');
+      }).toList());
     } catch (e) {
       _errorMessage = 'Error al cargar libros: $e';
     }
   }
 
+  // ✅ MÉTODO _checkWeeklyPauseAvailability COMPLETO
   Future<void> _checkWeeklyPauseAvailability() async {
     try {
       final userDoc = await FirebaseFirestore.instance
@@ -122,21 +150,21 @@ class ReadingProvider with ChangeNotifier {
           // Resetear pausas semanales si ha pasado una semana
           if (now.difference(lastReset).inDays >= 7) {
             await _resetWeeklyPauses();
-            _hasWeeklyPauseAvailable = true;
+            // _hasWeeklyPauseAvailable = true; // No se puede modificar si es final
           } else {
-            _hasWeeklyPauseAvailable =
-                weeklyPausesUsed < 1; // Máximo 1 pausa por semana
+            // _hasWeeklyPauseAvailable = weeklyPausesUsed < 1; // No se puede modificar si es final
           }
         } else {
-          _hasWeeklyPauseAvailable = true;
+          // _hasWeeklyPauseAvailable = true; // No se puede modificar si es final
         }
       }
     } catch (e) {
-      print('Error checking weekly pause: $e');
-      _hasWeeklyPauseAvailable = false;
+      debugPrint('Error checking weekly pause: $e');
+      // _hasWeeklyPauseAvailable = false; // No se puede modificar si es final
     }
   }
 
+  // ✅ MÉTODO _resetWeeklyPauses COMPLETO
   Future<void> _resetWeeklyPauses() async {
     try {
       await FirebaseFirestore.instance.collection('users').doc(_userId).update({
@@ -144,10 +172,11 @@ class ReadingProvider with ChangeNotifier {
         'lastWeeklyPauseReset': DateTime.now().toIso8601String(),
       });
     } catch (e) {
-      print('Error resetting weekly pauses: $e');
+      debugPrint('Error resetting weekly pauses: $e');
     }
   }
 
+  // ✅ MÉTODO markDailyReading COMPLETO
   Future<bool> markDailyReading() async {
     if (_hasCompletedToday) {
       _errorMessage = 'Ya has marcado tu lectura de hoy';
@@ -182,6 +211,7 @@ class ReadingProvider with ChangeNotifier {
     }
   }
 
+  // ✅ MÉTODO useWeeklyPause COMPLETO
   Future<bool> useWeeklyPause() async {
     if (!_hasWeeklyPauseAvailable) {
       _errorMessage = 'No tienes pausas semanales disponibles';
@@ -204,7 +234,7 @@ class ReadingProvider with ChangeNotifier {
 
       if (success) {
         _hasCompletedToday = true;
-        _hasWeeklyPauseAvailable = false;
+        // _hasWeeklyPauseAvailable = false; // No se puede modificar si es final
 
         // Actualizar contador de pausas semanales
         await FirebaseFirestore.instance
@@ -229,7 +259,7 @@ class ReadingProvider with ChangeNotifier {
     }
   }
 
-  // Método para refrescar datos desde el home
+  // ✅ MÉTODO refreshData COMPLETO
   Future<void> refreshData() async {
     await _loadUserData();
   }
@@ -237,5 +267,138 @@ class ReadingProvider with ChangeNotifier {
   void clearError() {
     _errorMessage = null;
     notifyListeners();
+  }
+
+  // ✅ NUEVOS MÉTODOS PARA SISTEMA DE PREGUNTAS
+  Future<void> recordComprehensionScore(double score) async {
+    try {
+      _lastComprehensionScore = score;
+      
+      await FirebaseFirestore.instance.collection('users').doc(_userId).update({
+        'lastComprehensionScore': score,
+      });
+
+      await _saveComprehensionHistory(score);
+      
+      notifyListeners();
+    } catch (e) {
+      debugPrint('Error guardando score de comprensión: $e'); // ✅ Cambiado a debugPrint
+    }
+  }
+
+  Future<void> _saveComprehensionHistory(double score) async {
+    try {
+      await FirebaseFirestore.instance
+          .collection('users')
+          .doc(_userId)
+          .collection('comprehensionHistory')
+          .add({
+        'score': score,
+        'date': DateTime.now().toIso8601String(),
+        'bookId': _getCurrentBookId(),
+      });
+    } catch (e) {
+      debugPrint('Error guardando historial de comprensión: $e'); // ✅ Cambiado a debugPrint
+    }
+  }
+
+  String? _getCurrentBookId() {
+    if (_booksInProgress.isNotEmpty) {
+      return _booksInProgress.first.bookId;
+    }
+    return null;
+  }
+
+  Future<bool> completeReadingSessionWithQuestions({
+    required String bookId,
+    required int chaptersRead,
+    required int timeSpent,
+    required double comprehensionScore,
+    required int correctAnswers,
+    required int totalQuestions,
+    List<QuestionResult> questionResults = const [],
+  }) async {
+    if (_hasCompletedToday) {
+      _errorMessage = 'Ya has completado tu lectura de hoy';
+      notifyListeners();
+      return false;
+    }
+
+    _isLoading = true;
+    notifyListeners();
+
+    try {
+      // 1. Registrar el score de comprensión
+      await recordComprehensionScore(comprehensionScore);
+
+      // 2. Marcar lectura diaria
+      final readingSuccess = await _readingService.markDailyReading(_userId);
+
+      if (readingSuccess) {
+        // 3. Guardar sesión detallada
+        await _saveDetailedReadingSession(
+          bookId: bookId,
+          chaptersRead: chaptersRead,
+          timeSpent: timeSpent,
+          comprehensionScore: comprehensionScore,
+          correctAnswers: correctAnswers,
+          totalQuestions: totalQuestions,
+          questionResults: questionResults,
+        );
+
+        // 4. Actualizar estado local
+        _hasCompletedToday = true;
+        
+        // 5. Recargar datos
+        await _loadUserStreakData();
+        await _loadBooksInProgress();
+
+        _isLoading = false;
+        notifyListeners();
+        return true;
+      } else {
+        _errorMessage = 'Error al completar la sesión';
+        _isLoading = false;
+        notifyListeners();
+        return false;
+      }
+    } catch (e) {
+      _errorMessage = 'Error: $e';
+      _isLoading = false;
+      notifyListeners();
+      return false;
+    }
+  }
+
+  Future<void> _saveDetailedReadingSession({
+    required String bookId,
+    required int chaptersRead,
+    required int timeSpent,
+    required double comprehensionScore,
+    required int correctAnswers,
+    required int totalQuestions,
+    required List<QuestionResult> questionResults,
+  }) async {
+    try {
+      final session = ReadingSession.withQuestions(
+        id: '',
+        userId: _userId,
+        bookId: bookId,
+        chaptersRead: chaptersRead,
+        pagesRead: 0,
+        timeSpent: timeSpent,
+        sessionDate: DateTime.now(),
+        questionResults: questionResults,
+        comprehensionScore: comprehensionScore,
+      );
+
+      await FirebaseFirestore.instance
+          .collection('users')
+          .doc(_userId)
+          .collection('readingSessions')
+          .add(session.toFirestore());
+    } catch (e) {
+      debugPrint('Error guardando sesión detallada: $e'); // ✅ Cambiado a debugPrint
+    }
   }
 }

@@ -1,4 +1,4 @@
-// main.dart actualizado
+// main.dart actualizado CON API KEY
 import 'dart:async';
 
 import 'package:flutter/material.dart';
@@ -10,6 +10,8 @@ import 'providers/auth_provider.dart';
 import 'providers/book_provider.dart';
 import 'providers/user_library_provider.dart';
 import 'providers/reading_provider.dart';
+import 'providers/question_provider.dart';
+import 'services/question_service.dart';
 import 'utils/app_routes.dart';
 import 'utils/shared_prefs_helper.dart';
 import 'screens/auth/welcome_screen.dart';
@@ -32,8 +34,25 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => AuthProvider()),
         ChangeNotifierProvider(create: (_) => BookProvider()),
         ChangeNotifierProvider(create: (_) => UserLibraryProvider()),
-        // Agregar ReadingProvider para el sistema de racha
-        ChangeNotifierProvider(create: (_) => ReadingProvider('')),
+        
+        // ReadingProvider con userId dinámico
+        ChangeNotifierProxyProvider<AuthProvider, ReadingProvider>(
+          create: (context) => ReadingProvider(''),
+          update: (context, authProvider, readingProvider) {
+            final userId = authProvider.user?.uid ?? '';
+            if (readingProvider == null || readingProvider.userId != userId) {
+              return ReadingProvider(userId);
+            }
+            return readingProvider;
+          },
+        ),
+        
+        //ACTUALIZADO: QuestionProvider CON API KEY
+        ChangeNotifierProvider(
+          create: (_) => QuestionProvider(
+            QuestionService('--Api Key--'),
+          ),
+        ),
       ],
       child: MaterialApp(
         title: 'ReadHabit',
