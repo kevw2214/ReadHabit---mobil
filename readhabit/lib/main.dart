@@ -50,7 +50,7 @@ class MyApp extends StatelessWidget {
         // ✅ ACTUALIZADO: QuestionProvider CON API KEY
         ChangeNotifierProvider(
           create: (_) => QuestionProvider(
-            QuestionService('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'),
+            QuestionService('--Api Key--'),
           ),
         ),
       ],
