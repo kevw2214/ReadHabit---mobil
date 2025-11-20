@@ -14,9 +14,9 @@ class UserBook {
   final DateTime? completedDate;
   final DateTime lastReadDate;
   final int readingPlan; // capítulos por día
-  final double comprehensionScore; // ✅ Nuevo: Score de comprensión
-  final int totalQuestionsAnswered; // ✅ Nuevo: Preguntas respondidas
-  final int correctAnswers; // ✅ Nuevo: Respuestas correctas
+  final double comprehensionScore; 
+  final int totalQuestionsAnswered; 
+  final int correctAnswers; 
 
   UserBook({
     required this.id,
